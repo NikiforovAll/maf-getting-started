@@ -1,0 +1,47 @@
+## .NET
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.nupkg
+*.nuget.props
+*.nuget.targets
+**/packages/*
+!**/packages/build/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet packages cache
+.nuget/
+
+# Build artifacts
+artifacts/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code
+# .vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Aspire
+appsettings.Development.Aspire.json
+
+# SQLite data
+.data/
