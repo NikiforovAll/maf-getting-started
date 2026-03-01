@@ -36,7 +36,7 @@ footer: ""
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # Agenda
 
@@ -44,18 +44,19 @@ footer: ""
 2. **Your First Agent** — `AzureOpenAIClient` → `.AsAIAgent()`, Run & Stream
 3. **Tools** — Function tools, `[Description]`, agent-as-tool
 4. **Multi-Turn Conversations** — `AgentSession`, chat history
+5. **Memory & Persistence** — Serialization, session restore
 
 ---
 
 ![bg fit](./img/bg-section.png)
 
-# What is **MAF**?
+# What is&nbsp;**MAF?**
 
 ## Semantic Kernel + AutoGen → One Framework
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # The Evolution
 
@@ -75,7 +76,7 @@ footer: ""
 
 ---
 
-![bg fit](./img/bg-slide-alt3.png)
+![bg fit](./img/bg-alt3.png)
 
 # Core Architecture
 
@@ -94,7 +95,7 @@ footer: ""
 
 ---
 
-![bg fit](./img/bg-slide-alt1.png)
+![bg fit](./img/bg-alt1.png)
 
 # Key Concepts
 
@@ -108,9 +109,9 @@ footer: ""
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
-# Setup — `dotnet run` File Mode
+# Setup
 
 ```bash
 # Environment
@@ -121,19 +122,11 @@ export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o-mini"
 dotnet run src/01-hello-agent.cs
 ```
 
-<br/>
-
-<div class="tip">
-
-**`#:package` directives** in the `.cs` file declare NuGet dependencies — `dotnet run` restores and builds automatically
-
-</div>
-
 ---
 
 ![bg fit](./img/bg-section.png)
 
-# Your **First Agent**
+# Your&nbsp;**First Agent**
 
 ## From zero to running in 30 lines
 
@@ -145,11 +138,11 @@ section {
 }
 </style>
 
-![bg fit](./img/bg-slide-alt3.png)
+![bg fit](./img/bg-alt3.png)
 
 # 01-hello-agent.cs — Package Directives
 
-```csharp
+```ts
 #:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
 #:package Azure.AI.OpenAI@2.8.0-beta.1
 #:package Azure.Identity@1.18.0
@@ -161,12 +154,6 @@ using Microsoft.Extensions.AI;
 using OpenAI.Chat;
 ```
 
-<div class="key">
-
-**`using OpenAI.Chat`** is required — the `AsAIAgent()` extension method lives in this namespace
-
-</div>
-
 ---
 
 <style scoped>
@@ -175,11 +162,11 @@ section {
 }
 </style>
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # 01-hello-agent.cs — Creating an Agent
 
-```csharp
+```ts
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
 
@@ -200,11 +187,11 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCreden
 
 ---
 
-![bg fit](./img/bg-slide-alt1.png)
+![bg fit](./img/bg-alt1.png)
 
 # 01-hello-agent.cs — Run & Stream
 
-```csharp
+```ts
 // Non-streaming — get the full response at once
 Console.WriteLine(await agent.RunAsync("Tell me a one-sentence fun fact."));
 
@@ -216,26 +203,34 @@ await foreach (var update in agent.RunStreamingAsync(
 }
 ```
 
-<br/>
-
-<div class="tip">
-
-**`DefaultAzureCredential`** — no API keys. Uses `az login`, managed identity, or environment credentials
-
-</div>
-
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+<style scoped>
+section {
+  font-size: 28px;
+}
+</style>
+
+![bg fit](./img/bg-alt2.png)
 
 # The Pipeline
 
 | Step | Call | Role |
 |------|------|------|
-| 1 | `AzureOpenAIClient` | Azure OpenAI provider (`Azure.AI.OpenAI`) |
-| 2 | `.GetChatClient("gpt-4o-mini")` | `ChatClient` via `IChatClient` abstraction |
-| 3 | `.AsAIAgent(options)` | `AIAgent` from MAF (`Microsoft.Agents.AI.OpenAI`) |
+| 1 | `AzureOpenAIClient` | Azure OpenAI provider |
+| 2 | `.GetChatClient("gpt-4o-mini")` | `ChatClient` via `IChatClient` |
+| 3 | `.AsAIAgent(options)` | `AIAgent` from MAF |
 | 4 | `.RunAsync("prompt")` | Execute and get response |
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/01-hello-agent.cs`
 
 ---
 
@@ -247,11 +242,11 @@ await foreach (var update in agent.RunStreamingAsync(
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # Function Tools — The Pattern
 
-```csharp
+```ts
 // 1. Define a plain C# method with [Description] attributes
 [Description("Get the weather for a given location.")]
 static string GetWeather(
@@ -270,7 +265,7 @@ AIAgent weatherAgent = client
 
 ---
 
-![bg fit](./img/bg-slide-alt3.png)
+![bg fit](./img/bg-alt3.png)
 
 # How Tool Calling Works
 
@@ -296,11 +291,11 @@ section {
 }
 </style>
 
-![bg fit](./img/bg-slide-alt1.png)
+![bg fit](./img/bg-alt1.png)
 
 # Agent-as-Tool — Composing Agents
 
-```csharp
+```ts
 // WeatherAgent becomes a tool for the orchestrator
 AIAgent orchestrator = client
     .GetChatClient(deploymentName)
@@ -324,7 +319,7 @@ Console.WriteLine(
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # Tool Composition Diagram
 
@@ -344,19 +339,29 @@ Console.WriteLine(
 
 ---
 
+<!-- _class: chapter -->
+
 ![bg fit](./img/bg-section.png)
 
-# **Multi-Turn** Conversations
+# Demo
+
+## `dotnet run src/02-tools.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **Multi-Turn**&nbsp;Conversations
 
 ## Maintaining context across interactions
 
 ---
 
-![bg fit](./img/bg-slide-alt3.png)
+![bg fit](./img/bg-alt3.png)
 
 # AgentSession — Conversation State
 
-```csharp
+```ts
 AIAgent agent = client
     .GetChatClient(deploymentName)
     .AsAIAgent(
@@ -376,11 +381,11 @@ AgentSession session = await agent.CreateSessionAsync();
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+![bg fit](./img/bg-alt2.png)
 
 # Multi-Turn in Action
 
-```csharp
+```ts
 // Turn 1 — introduce context
 Console.WriteLine(await agent.RunAsync(
     "My name is Alice and I love hiking.", session));
@@ -403,8 +408,13 @@ Without a session, each `RunAsync` call is **stateless** — the agent has no me
 </div>
 
 ---
+<style scoped>
+section {
+    font-size: 28px;
+}
+</style>
 
-![bg fit](./img/bg-slide-alt1.png)
+![bg fit](./img/bg-alt1.png)
 
 # Under the Hood
 
@@ -419,11 +429,216 @@ Without a session, each `RunAsync` call is **stateless** — the agent has no me
 
 - Default: `InMemoryChatHistoryProvider`
 - Session accumulates full conversation → sent with each LLM call
-- Serialization available for persistence (covered in Presentation 2)
+- Serialization available for persistence (next section)
 
 ---
 
-![bg fit](./img/bg-slide-alt2.png)
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/03-multi-turn.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **Memory**&nbsp;& Persistence
+
+## Keeping agents stateful across sessions
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# The Problem
+
+- **Session A** (in memory): User says *"My name is Alice"* — Agent remembers
+- **Process restart** — memory is lost
+- **Session B** (new process): User asks *"What is my name?"* — Agent has no idea
+
+<br/>
+
+<div class="warning">
+
+**Default `InMemoryChatHistoryProvider`** — conversation state lives only in process memory
+
+</div>
+
+---
+
+<style scoped>
+section {
+  font-size: 28px;
+}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# 04-memory.cs — In-Memory History
+
+```ts
+// InMemoryChatHistoryProvider is used automatically
+AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
+    .GetChatClient(deploymentName)
+    .AsAIAgent(
+        instructions: "You are a friendly assistant. Keep your answers brief.",
+        name: "MemoryAgent"
+    );
+
+AgentSession session = await agent.CreateSessionAsync();
+
+await agent.RunAsync("Hello! What's the square root of 9?", session);
+await agent.RunAsync("My name is Alice", session);
+
+// Agent remembers — chat history accumulates in the session
+await agent.RunAsync("What is my name?", session);
+// → "Your name is Alice!"
+```
+
+---
+
+![bg fit](./img/bg-alt1.png)
+
+# Session Serialization
+
+```ts
+// Serialize session to JSON for persistence
+var serialized = await agent.SerializeSessionAsync(session);
+Console.WriteLine($"Session serialized ({serialized.GetRawText().Length} bytes)");
+
+// Store serialized JSON anywhere — database, file, Redis, blob storage
+
+// Restore session from serialized data
+var restoredSession = await agent.DeserializeSessionAsync(serialized);
+
+// Agent remembers everything from the original session
+await agent.RunAsync("Do you still remember my name?", restoredSession);
+// → "Yes, your name is Alice!"
+```
+
+<div class="key">
+
+**`SerializeSessionAsync` / `DeserializeSessionAsync`** — portable session state for any storage backend
+
+</div>
+
+---
+<style scoped>
+section {
+  font-size: 28px;
+}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# Memory Architecture
+
+| Component | Description |
+|-----------|-------------|
+| **AIAgent** | Core agent abstraction |
+| **AgentSession** | Holds conversation state |
+| **InMemoryChatHistoryProvider** | Default, zero config, lost on restart |
+| **Serialize / Deserialize** | Export to JSON blob, store anywhere |
+| **Custom IChatHistoryProvider** | Implement your own for database-backed history |
+
+<br/>
+
+- **Short-lived**: `InMemoryChatHistoryProvider` — default, zero config
+- **Persistent**: Serialize → store → deserialize on next session
+- **Custom**: Implement `ChatHistoryProvider` for database-backed history
+
+---
+
+<style scoped>
+section {
+  font-size: 26px;
+}
+</style>
+
+![bg fit](./img/bg-alt3.png)
+
+# Custom ChatHistoryProvider
+
+```ts
+sealed class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
+{
+    protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(
+        InvokingContext context, CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(filePath))
+            return new(Enumerable.Empty<ChatMessage>());
+        var json = File.ReadAllText(filePath);
+        return new(JsonSerializer.Deserialize<List<ChatMessage>>(json)!.AsEnumerable());
+    }
+
+    protected override ValueTask StoreChatHistoryAsync(
+        InvokedContext context, CancellationToken cancellationToken = default)
+    {
+        List<ChatMessage> existing = File.Exists(filePath)
+            ? JsonSerializer.Deserialize<List<ChatMessage>>(File.ReadAllText(filePath)) ?? []
+            : [];
+        existing.AddRange(context.RequestMessages);
+        existing.AddRange(context.ResponseMessages ?? []);
+        File.WriteAllText(filePath, JsonSerializer.Serialize(existing));
+        return default;
+    }
+}
+```
+
+---
+
+![bg fit](./img/bg-alt1.png)
+
+# Wiring a Custom Provider
+
+```ts
+AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
+    .GetChatClient(deploymentName)
+    .AsAIAgent(new ChatClientAgentOptions
+    {
+        Name = "PersistentAgent",
+        ChatOptions = new ChatOptions { Instructions = "You are a friendly assistant." },
+        ChatHistoryProvider = new FileChatHistoryProvider("chat-history.json"),
+    });
+```
+
+<div class="key">
+
+**`ChatClientAgentOptions.ChatHistoryProvider`** — plug in any storage backend: files, Redis, Cosmos DB, Postgres
+
+</div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/04-memory.cs`
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/04b-memory-custom.cs`
+
+---
+<style scoped>
+section {
+  font-size: 30px;
+}
+</style>
+
+![bg fit](./img/bg-alt2.png)
 
 # Key Takeaways
 
@@ -435,11 +650,11 @@ Without a session, each `RunAsync` call is **stateless** — the agent has no me
 
 4. **`AgentSession`** — pass to `RunAsync` to maintain multi-turn conversation history
 
-5. **`DefaultAzureCredential`** — no API keys, subscription-level auth
+5. **`SerializeSessionAsync`** — portable session state, store anywhere, restore anytime
 
 ---
 
-![bg fit](./img/bg-slide-alt3.png)
+![bg fit](./img/bg-alt3.png)
 
 # Resources
 
@@ -452,5 +667,5 @@ Without a session, each `RunAsync` call is **stateless** — the agent has no me
 
 ![bg fit](./img/bg-title.png)
 
-## **Next: Production Patterns**
-### Memory, Workflows & MCP Integration
+## **Next: Workflows & MCP**
+### Executors, Pipelines & Agent-as-MCP-Server

@@ -4,11 +4,10 @@ Presentation series for learning [Microsoft Agent Framework](https://learn.micro
 
 ## Presentations
 
-| #   | Title                                         | Samples                                                 |
-| --- | --------------------------------------------- | ------------------------------------------------------- |
-| 1   | Foundations — Your First MAF Agent            | `01-hello-agent.cs`, `02-tools.cs`, `03-multi-turn.cs`  |
-| 2   | Production Patterns — Memory, Workflows & MCP | `04-memory.cs`, `05-workflows.cs`, `06-agent-as-mcp.cs` |
-| 3   | Hosting & Integration (TBD)                   | `07-hosting-a2a.cs`, `08-hosting-agui.cs`               |
+| #   | Title                                         | Slides | Samples                                                 |
+| --- | --------------------------------------------- | ------ | ------------------------------------------------------- |
+| 1   | Foundations — Your First MAF Agent            | [view](https://nikiforovall.blog/maf-getting-started/01-foundations.html) | `01-hello-agent.cs`, `02-tools.cs`, `03-multi-turn.cs`, `04-memory.cs`, `04b-memory-custom.cs` |
+| 2   | Workflows & MCP Integration                  | [view](https://nikiforovall.blog/maf-getting-started/02-workflows.html) | `05a-workflows.cs`, `05b-workflows-agents.cs`, `05c-workflows-composed.cs`, `06-agent-as-mcp.cs` |
 
 ## Prerequisites
 
@@ -28,13 +27,4 @@ source scripts/init-env.sh
 
 # Run a sample
 dotnet run src/01-hello-agent.cs
-```
-
-## Project structure
-
-```
-src/           → Run-file C# samples (dotnet run file.cs)
-slides/        → Marp presentations
-scripts/       → Environment setup
-_plans/        → Implementation plans
 ```

@@ -9,33 +9,6 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using OpenAI.Chat;
 
-// --- Part 1: Pure function workflow (no LLM) ---
-
-Console.WriteLine("=== Part 1: Text Processing Workflow ===\n");
-
-Func<string, string> uppercaseFunc = s => s.ToUpperInvariant();
-var uppercase = uppercaseFunc.BindAsExecutor("UppercaseExecutor");
-
-Func<string, string> reverseFunc = s => string.Concat(s.Reverse());
-var reverse = reverseFunc.BindAsExecutor("ReverseTextExecutor");
-
-WorkflowBuilder builder = new(uppercase);
-builder.AddEdge(uppercase, reverse).WithOutputFrom(reverse);
-var workflow = builder.Build();
-
-await using Run run = await InProcessExecution.RunAsync(workflow, "Hello, World!");
-foreach (WorkflowEvent evt in run.NewEvents)
-{
-    if (evt is ExecutorCompletedEvent executorComplete)
-    {
-        Console.WriteLine($"{executorComplete.ExecutorId}: {executorComplete.Data}");
-    }
-}
-
-// --- Part 2: Agent-based sequential workflow ---
-
-Console.WriteLine("\n=== Part 2: Agent Workflow ===\n");
-
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
 

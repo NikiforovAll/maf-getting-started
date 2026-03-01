@@ -80,9 +80,9 @@ section.hero p {
   font-size: 26px;
 }
 
-/* Chapter divider slide — gradient bg with white text */
+/* Chapter divider slide — centered layout, no pagination */
 section.chapter {
-  color: #FFFFFF;
+  color: #1A1A2E;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -93,18 +93,19 @@ section.chapter {
 
 section.chapter h1 {
   position: relative;
-  color: #FFFFFF;
+  color: #1A1A2E;
   font-size: 48pt;
   font-weight: 300;
   height: auto;
 }
 
 section.chapter h1 strong {
+  color: #1F6FEB;
   font-weight: 600;
 }
 
 section.chapter h2 {
-  color: rgba(255, 255, 255, 0.8);
+  color: #1F6FEB;
   font-size: 22pt;
   font-weight: 300;
 }
