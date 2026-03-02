@@ -1,6 +1,6 @@
 ---
 marp: true
-title: "Microsoft Agent Framework: Workflows & MCP"
+title: "Microsoft Agent Framework: Workflows, MCP & AG-UI"
 author: Oleksii Nikiforov
 size: 16:9
 theme: copilot
@@ -13,7 +13,7 @@ footer: ""
 ![bg fit](./img/bg-title.png)
 
 # **Microsoft Agent Framework**
-## Workflows & MCP Integration
+## Workflows, MCP & AG-UI
 
 ---
 
@@ -42,6 +42,8 @@ footer: ""
 
 1. **Workflows** — Executors, graph edges, agent pipelines
 2. **MCP Integration** — Agent-as-MCP-server, dev workflow with Claude Code
+3. **A2A** — Agent-to-agent communication
+4. **AG-UI** — Expose agents to web UIs via HTTP + SSE
 
 ---
 
@@ -105,7 +107,6 @@ var workflow = builder.Build();
 | 2 | ReverseTextExecutor | `"!DLROW ,OLLEH"` |
 
 ```ts
-// Execute
 await using Run run = await InProcessExecution.RunAsync(workflow, "Hello, World!");
 
 foreach (WorkflowEvent evt in run.NewEvents)
@@ -137,20 +138,17 @@ foreach (WorkflowEvent evt in run.NewEvents)
 # Agent Workflow — Sequential Pipeline
 
 ```ts
-AIAgent writer = client
+var chatClient = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
-    .AsAIAgent(
-        instructions: "You write short creative stories in 2-3 sentences.",
-        name: "Writer"
-    );
+    .AsIChatClient();
 
-AIAgent critic = client
-    .GetChatClient(deploymentName)
-    .AsAIAgent(
-        instructions: "You review stories and give brief constructive feedback "
-            + "in 1-2 sentences.",
-        name: "Critic"
-    );
+AIAgent writer = chatClient.AsAIAgent(
+    instructions: "You write short creative stories in 2-3 sentences.",
+    name: "Writer");
+
+AIAgent critic = chatClient.AsAIAgent(
+    instructions: "You review stories and give brief constructive feedback in 1-2 sentences.",
+    name: "Critic");
 
 var agentWorkflow = AgentWorkflowBuilder.BuildSequential("story-pipeline", [writer, critic]);
 ```
@@ -159,19 +157,18 @@ var agentWorkflow = AgentWorkflowBuilder.BuildSequential("story-pipeline", [writ
 
 ![bg fit](./img/bg-alt3.png)
 
-# Agent Workflow — Execution
+# Agent Workflow — Streaming Execution
 
 ```ts
-await using Run agentRun = await InProcessExecution.RunAsync(
-    agentWorkflow, "Write a story about a robot learning to paint.");
+List<ChatMessage> input = [new(ChatRole.User, "Write a story about a robot learning to paint.")];
 
-foreach (WorkflowEvent evt in agentRun.NewEvents)
+await using StreamingRun run = await InProcessExecution.RunStreamingAsync(agentWorkflow, input);
+await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+await foreach (WorkflowEvent evt in run.WatchStreamAsync())
 {
-    if (evt is ExecutorCompletedEvent executorComplete)
-    {
-        Console.WriteLine(
-            $"[{executorComplete.ExecutorId}]: {executorComplete.Data}");
-    }
+    if (evt is AgentResponseUpdateEvent e)
+        Console.Write(e.Update.Text);
 }
 ```
 
@@ -179,6 +176,14 @@ foreach (WorkflowEvent evt in agentRun.NewEvents)
 [Writer]: "A small robot named Pixel discovered an abandoned art studio..."
 [Critic]: "The story has a charming premise. Consider adding sensory details..."
 ```
+
+<br/>
+
+<div class="tip">
+
+Agent workflows use **`StreamingRun`** + **`AgentResponseUpdateEvent`** — not `Run`/`NewEvents`
+
+</div>
 
 ---
 
@@ -191,6 +196,10 @@ foreach (WorkflowEvent evt in agentRun.NewEvents)
 ## `dotnet run src/05b-workflows-agents.cs`
 
 ---
+
+<style scoped>
+th,td {font-size: 20px;}
+</style>
 
 ![bg fit](./img/bg-alt2.png)
 
@@ -214,6 +223,10 @@ foreach (WorkflowEvent evt in agentRun.NewEvents)
 
 ---
 
+<style scoped>
+th,td {font-size: 20px;}
+</style>
+
 ![bg fit](./img/bg-alt2.png)
 
 # Workflow Building Blocks
@@ -224,7 +237,8 @@ foreach (WorkflowEvent evt in agentRun.NewEvents)
 | **Edge**       | `builder.AddEdge(A, B)`                        | Connects two executors (A → B)   |
 | **Output**     | `builder.WithOutputFrom(B)`                    | Designates the final output node |
 | **Run**        | `InProcessExecution.RunAsync(workflow, input)` | Executes the workflow            |
-| **Events**     | `ExecutorCompletedEvent`                       | Emitted per completed node       |
+| **StreamingRun** | `InProcessExecution.RunStreamingAsync()`     | Executes with streaming events   |
+| **Events**     | `ExecutorCompletedEvent`, `AgentResponseUpdateEvent` | Emitted per completed node |
 
 ---
 
@@ -423,6 +437,8 @@ builder.Services
 await builder.Build().RunAsync();
 ```
 
+<br/>
+
 <div class="tip">
 
 **`.AsAIFunction()` → `McpServerTool.Create()`** — two calls to go from agent to MCP tool
@@ -431,6 +447,9 @@ await builder.Build().RunAsync();
 
 ---
 
+<style scoped>
+section {font-size: 26px;}
+</style>
 
 ![bg fit](./img/bg-alt1.png)
 
@@ -477,18 +496,19 @@ await builder.Build().RunAsync();
 # Agent as MCP Client
 
 ```ts
-// Connect to a remote MCP server over HTTP
+// Connect to a remote MCP server over HTTP (Streamable HTTP)
 await using var mcpClient = await McpClient.CreateAsync(
     new HttpClientTransport(new()
     {
         Endpoint = new Uri("https://learn.microsoft.com/api/mcp"),
-        Name = "Microsoft Learn MCP",
+        Name = "Microsoft Learn MCP"
     }));
 
 // Discover tools and pass to agent
 IList<McpClientTool> mcpTools = await mcpClient.ListToolsAsync();
 
 AIAgent agent = client.GetChatClient(deploymentName)
+    .AsIChatClient()
     .AsAIAgent(
         instructions: "You answer questions using Microsoft Learn docs.",
         name: "DocsAgent",
@@ -510,6 +530,284 @@ AIAgent agent = client.GetChatClient(deploymentName)
 # Demo
 
 ## `dotnet run src/06-agent-as-mcp.cs`
+## `dotnet run src/06b-agent-as-mcp-client.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **A2A**&nbsp;Protocol
+
+## Agent-to-agent communication over HTTP
+
+---
+
+<style scoped>
+th,td {font-size: 20px;}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# What is A2A?
+
+**Agent-to-Agent Protocol** — open standard for agents to discover and communicate with each other
+
+| | MCP | A2A |
+|--|-----|-----|
+| **Who talks** | Client → Tool | Agent → Agent |
+| **Transport** | stdio / HTTP | HTTP + JSON-RPC |
+| **Discovery** | Config file | `/.well-known/agent-card.json` |
+| **Use case** | Extend agent capabilities | Multi-agent orchestration |
+
+<br/>
+
+<div class="key">
+
+MCP = **tools for one agent**, A2A = **agents talking to agents**
+
+</div>
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# A2A — Agent Card
+
+Every A2A agent publishes a card at `/.well-known/agent-card.json`
+
+```ts
+AgentCard agentCard = new()
+{
+    Name = "A2AAssistant",
+    Description = "A helpful assistant exposed via A2A protocol.",
+    Version = "1.0.0",
+    DefaultInputModes = ["text"],
+    DefaultOutputModes = ["text"],
+    Capabilities = new() { Streaming = false },
+    Skills = [new() {
+        Id = "general", Name = "General Assistant",
+        Description = "Answers general questions and checks weather."
+    }],
+};
+```
+
+<div class="tip">
+
+Clients discover agents by fetching the card — no config files, no registry needed
+
+</div>
+
+---
+
+<style scoped>
+section {
+  font-size: 26px;
+}
+</style>
+
+![bg fit](./img/bg-alt1.png)
+
+# 08a — A2A Server
+
+```ts
+#:sdk Microsoft.NET.Sdk.Web
+#:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+
+AIAgent agent = client.GetChatClient(deploymentName)
+    .AsIChatClient()
+    .AsAIAgent(instructions: "You are a helpful assistant.",
+        name: "A2AAssistant",
+        tools: [AIFunctionFactory.Create(GetWeather)]);
+
+app.MapA2A(agent, path: "/", agentCard: agentCard);
+
+await app.RunAsync();
+```
+
+---
+
+![bg fit](./img/bg-alt2.png)
+
+# 08b — A2A Client
+
+```ts
+#:package Microsoft.Agents.AI.A2A@1.0.0-preview.260225.1
+
+A2ACardResolver resolver = new(new Uri("http://localhost:5000"));
+
+AIAgent agent = await resolver.GetAIAgentAsync();
+
+Console.WriteLine(await agent.RunAsync("What is the weather in Amsterdam?"));
+```
+
+<div class="key">
+
+**6 lines** to discover a remote agent and call it — the same `AIAgent` interface everywhere
+
+</div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/08a-agent-as-a2a-server.cs`
+## `dotnet run src/08b-agent-as-a2a-client.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **AG-UI**&nbsp;Protocol
+
+## Exposing agents to web UIs via HTTP + SSE
+
+---
+
+<style scoped>
+th,td {font-size: 20px;}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# What is AG-UI?
+
+**Agent User Interface Protocol** — open standard for connecting agents to frontend UIs
+
+| | MCP | A2A | AG-UI |
+|--|-----|-----|-------|
+| **Who talks** | Client → Tool | Agent → Agent | User → Agent |
+| **Transport** | stdio / HTTP | HTTP + JSON-RPC | HTTP POST + SSE |
+| **Discovery** | Config file | Agent card | URL |
+| **Use case** | Extend capabilities | Multi-agent orchestration | Serve end users |
+
+<br/>
+
+<div class="key">
+
+MCP = **tools**, A2A = **agents**, AG-UI = **end users**
+
+</div>
+
+---
+
+<style scoped>
+th,td {
+  font-size: 22px;
+}
+</style>
+
+![bg fit](./img/bg-alt3.png)
+
+# How AG-UI Works
+
+**Client sends one HTTP POST → Server streams back SSE events**
+
+| Phase | What happens | SSE Events |
+|-------|-------------|------------|
+| **Start** | Server begins processing | `RUN_STARTED` |
+| **Text response** | Tokens stream to UI in real-time | `TEXT_MESSAGE_START` → `TEXT_MESSAGE_CONTENT`* → `TEXT_MESSAGE_END` |
+| **Tool call** | Agent invokes a function | `TOOL_CALL_START` → `TOOL_CALL_ARGS` → `TOOL_CALL_END` |
+| **State update** | Shared state syncs to client | `STATE_SNAPSHOT` or `STATE_DELTA` |
+| **Finish** | Run completes | `RUN_FINISHED` |
+
+<br/>
+
+<div class="key">
+
+One request, one stream — the full agent turn (text, tool calls, state) delivered as typed events over SSE
+
+</div>
+
+---
+
+<style scoped>
+section {
+  font-size: 26px;
+}
+</style>
+
+![bg fit](./img/bg-alt1.png)
+
+# 07-agent-as-agui.cs — AG-UI Server
+
+```ts
+#:sdk Microsoft.NET.Sdk.Web
+#:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAGUI();              // register AG-UI JSON serialization
+
+WebApplication app = builder.Build();
+
+var client = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential());
+AIAgent agent = client.GetChatClient(deploymentName)
+    .AsIChatClient()
+    .AsAIAgent(
+        name: "AGUIAssistant",
+        instructions: "You are a helpful assistant.",
+        tools: [AIFunctionFactory.Create(GetWeather)]);
+
+app.MapAGUI("/", agent);                // expose agent via AG-UI protocol
+await app.RunAsync();
+```
+
+<div class="tip">
+
+**`AddAGUI()`** + **`MapAGUI("/", agent)`** — two calls from agent to HTTP+SSE endpoint
+
+</div>
+
+---
+
+<style scoped>
+section {
+  font-size: 26px;
+}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# 07b — AG-UI Client
+
+```ts
+#:package Microsoft.Agents.AI.AGUI@1.0.0-preview.260225.1
+
+using HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
+AGUIChatClient chatClient = new(httpClient, "http://localhost:5000");
+
+AIAgent agent = chatClient.AsAIAgent(name: "agui-client");
+
+await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(
+    [new ChatMessage(ChatRole.User, message)]))
+{
+    foreach (AIContent content in update.Contents)
+        if (content is TextContent text)
+            Console.Write(text.Text);
+}
+```
+
+<div class="tip">
+
+**`AGUIChatClient`** — connect to any AG-UI server; build rich UIs with **[CopilotKit](https://docs.copilotkit.ai/microsoft-agent-framework)** or **[AG-UI Dojo](https://dojo.ag-ui.com/microsoft-agent-framework-dotnet)**
+
+</div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/07-agent-as-agui.cs`
+## `dotnet run src/07b-agent-as-agui-client.cs`
 
 ---
 
@@ -525,7 +823,9 @@ AIAgent agent = client.GetChatClient(deploymentName)
 
 4. **`McpServerTool.Create(agent.AsAIFunction())`** — expose agents as MCP tools in two lines
 
-5. **`.mcp.json`** — declarative config for MCP client discovery
+5. **`MapA2A()` + `AgentCard`** — agents discover and call each other over HTTP
+
+6. **`AddAGUI()` + `MapAGUI()`** — expose agents to web UIs via HTTP+SSE in two lines
 
 ---
 
@@ -536,4 +836,8 @@ AIAgent agent = client.GetChatClient(deploymentName)
 - [MAF Documentation](https://learn.microsoft.com/en-us/agent-framework/overview)
 - [MAF Samples](https://github.com/microsoft/agent-framework/tree/main/dotnet/samples)
 - [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- [AG-UI Protocol](https://docs.ag-ui.com)
+- [AG-UI in MAF](https://learn.microsoft.com/agent-framework/integrations/ag-ui/getting-started)
+- [AG-UI Dojo (MAF + CopilotKit)](https://dojo.ag-ui.com/microsoft-agent-framework-dotnet)
+- [A2A Protocol](https://github.com/a2aproject/A2A)
 - [This repo](https://github.com/NikiforovAll/maf-getting-started)

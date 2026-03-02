@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "maf-agents": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "src/06-agent-as-mcp.cs"
+      ],
+      "env": {
+        "AZURE_OPENAI_ENDPOINT": "https://oleksii-nikiforov-7668-resource.cognitiveservices.azure.com/",
+        "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o-mini"
+      }
+    }
+  }
+}

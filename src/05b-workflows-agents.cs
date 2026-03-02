@@ -7,35 +7,51 @@ using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
-using OpenAI.Chat;
+using Microsoft.Extensions.AI;
 
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
 
-var client = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential());
-
-AIAgent writer = client
+var chatClient = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
-    .AsAIAgent(instructions: "You write short creative stories in 2-3 sentences.", name: "Writer");
+    .AsIChatClient();
 
-AIAgent critic = client
-    .GetChatClient(deploymentName)
-    .AsAIAgent(
-        instructions: "You review stories and give brief constructive feedback in 1-2 sentences.",
-        name: "Critic"
-    );
+AIAgent writer = chatClient.AsAIAgent(
+    instructions: "You write short creative stories in 2-3 sentences.",
+    name: "Writer"
+);
+
+AIAgent critic = chatClient.AsAIAgent(
+    instructions: "You review stories and give brief constructive feedback in 1-2 sentences.",
+    name: "Critic"
+);
 
 var agentWorkflow = AgentWorkflowBuilder.BuildSequential("story-pipeline", [writer, critic]);
 
-await using Run agentRun = await InProcessExecution.RunAsync(
-    agentWorkflow,
-    "Write a story about a robot learning to paint."
-);
+List<ChatMessage> input = [new(ChatRole.User, "Write a story about a robot learning to paint.")];
 
-foreach (WorkflowEvent evt in agentRun.NewEvents)
+await using StreamingRun agentRun = await InProcessExecution.RunStreamingAsync(
+    agentWorkflow,
+    input
+);
+await agentRun.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+string lastExecutorId = string.Empty;
+await foreach (WorkflowEvent evt in agentRun.WatchStreamAsync())
 {
-    if (evt is ExecutorCompletedEvent executorComplete)
+    if (evt is AgentResponseUpdateEvent e)
     {
-        Console.WriteLine($"[{executorComplete.ExecutorId}]: {executorComplete.Data}");
+        if (e.ExecutorId != lastExecutorId)
+        {
+            lastExecutorId = e.ExecutorId;
+            Console.WriteLine();
+            Console.WriteLine($"[{e.ExecutorId}]:");
+        }
+
+        Console.Write(e.Update.Text);
+    }
+    else if (evt is WorkflowOutputEvent output)
+    {
+        Console.WriteLine();
     }
 }
