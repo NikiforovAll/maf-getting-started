@@ -31,7 +31,7 @@
 
   /* Theme mappings */
   --marpx-theme-font-family: 'Inter', 'Segoe UI', sans-serif;
-  --marpx-theme-font-size: 26pt;
+  --marpx-theme-font-size: 30px;
   --marpx-theme-font-color: var(--brand-text);
   --marpx-theme-background-color: var(--brand-bg);
   --marpx-theme-color: var(--brand-blue);
@@ -113,6 +113,10 @@ section code:not(pre code) {
 section pre {
   border-radius: 8px;
   border: 1px solid var(--brand-border);
+}
+
+section pre code {
+  font-size: 0.9em;
 }
 
 section blockquote {

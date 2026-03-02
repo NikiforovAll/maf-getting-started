@@ -13,7 +13,7 @@ var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
     .AsAIAgent(
-        instructions: "You are a friendly assistant. Keep your answers brief.",
+        instructions: "You are a friendly assistant. Keep your answers brief. And always remember the information the user shares with you during the conversation.",
         name: "ConversationAgent"
     );
 

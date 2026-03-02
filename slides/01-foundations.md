@@ -35,7 +35,11 @@ footer: ""
 <i class="fa fa-window-maximize"></i> [nikiforovall.blog](https://nikiforovall.blog/)
 
 ---
-
+<style scoped>
+section {
+  font-size: 34px;
+}
+</style>
 ![bg fit](./img/bg-alt2.png)
 
 # Agenda
@@ -60,6 +64,8 @@ footer: ""
 
 # The Evolution
 
+MAF unifies the best of both worlds:
+
 | Before | After |
 |--------|-------|
 | **Semantic Kernel** — enterprise AI orchestration | **Microsoft.Agents.AI** — unified agent runtime |
@@ -80,12 +86,16 @@ footer: ""
 
 # Core Architecture
 
+Built on **Microsoft.Extensions.AI**. It makes MAF provider-agnostic and extensible by design:
+
 | Layer | Components |
 |-------|-----------|
 | **Your Application** | AIAgent, Tools, Sessions, Workflows |
 | **Microsoft.Agents.AI** | Unified agent runtime |
 | **Microsoft.Extensions.AI** | `IChatClient`, `AIFunction` |
 | **Providers** | Azure OpenAI, OpenAI, Ollama, ... |
+
+<br/>
 
 <div class="tip">
 
@@ -98,6 +108,8 @@ footer: ""
 ![bg fit](./img/bg-alt1.png)
 
 # Key Concepts
+
+
 
 | Concept | Type | Purpose |
 |---------|------|---------|
@@ -132,11 +144,6 @@ dotnet run src/01-hello-agent.cs
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt3.png)
 
@@ -156,11 +163,6 @@ using OpenAI.Chat;
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 
@@ -205,15 +207,14 @@ await foreach (var update in agent.RunStreamingAsync(
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 
 # The Pipeline
+
+`IChatClient` abstraction makes it easy to replace the underlying chat client without changing agent code.
+
+<br/>
 
 | Step | Call | Role |
 |------|------|------|
@@ -265,6 +266,7 @@ AIAgent weatherAgent = client
 
 ---
 
+
 ![bg fit](./img/bg-alt3.png)
 
 # How Tool Calling Works
@@ -285,11 +287,6 @@ AIAgent weatherAgent = client
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt1.png)
 
@@ -408,11 +405,6 @@ Without a session, each `RunAsync` call is **stateless** — the agent has no me
 </div>
 
 ---
-<style scoped>
-section {
-    font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt1.png)
 
@@ -469,11 +461,6 @@ section {
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 
@@ -526,11 +513,6 @@ await agent.RunAsync("Do you still remember my name?", restoredSession);
 </div>
 
 ---
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 
@@ -552,6 +534,16 @@ section {
 
 ---
 
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/04-memory.cs`
+
+---
+
 <style scoped>
 section {
   font-size: 26px;
@@ -562,8 +554,9 @@ section {
 
 # Custom ChatHistoryProvider
 
+
 ```ts
-sealed class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
+public class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
 {
     protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(
         InvokingContext context, CancellationToken cancellationToken = default)
@@ -605,21 +598,13 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCreden
     });
 ```
 
-<div class="key">
+<br/>
 
-**`ChatClientAgentOptions.ChatHistoryProvider`** — plug in any storage backend: files, Redis, Cosmos DB, Postgres
+<div class="warning">
+
+**Limitation** — all sessions share the same file. Multiple concurrent sessions will clobber each other's history.
 
 </div>
-
----
-
-<!-- _class: chapter -->
-
-![bg fit](./img/bg-section.png)
-
-# Demo
-
-## `dotnet run src/04-memory.cs`
 
 ---
 
@@ -632,11 +617,86 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCreden
 ## `dotnet run src/04b-memory-custom.cs`
 
 ---
+
 <style scoped>
 section {
-  font-size: 30px;
+  font-size: 22px;
 }
 </style>
+
+![bg fit](./img/bg-alt2.png)
+
+# Session-Aware ChatHistoryProvider
+
+Uses **`ProviderSessionState<TState>`** — per-session state stored in `AgentSession.StateBag`:
+
+```ts
+public class FileChatHistoryProvider : ChatHistoryProvider
+{
+    private readonly ProviderSessionState<SessionState> _sessionState;
+
+    public FileChatHistoryProvider(string directory, string? existingSessionId = null)
+    {
+        _sessionState = new ProviderSessionState<SessionState>(_ => new SessionState(
+            existingSessionId ?? Guid.NewGuid().ToString("N")[..8]),nameof(FileChatHistoryProvider));
+    }
+
+    protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(
+        InvokingContext context, CancellationToken cancellationToken = default)
+    {
+        var state = _sessionState.GetOrInitializeState(context.Session);
+        var path = Path.Combine(_directory, $"{state.SessionId}.json");
+        // ... read from session-specific file
+    }
+
+    public record SessionState(string SessionId);
+}
+```
+
+---
+
+![bg fit](./img/bg-alt1.png)
+
+# Wiring Session-Aware Provider
+
+```ts
+var historyProvider = new FileChatHistoryProvider(historyDir);
+
+AIAgent agent = client.GetChatClient(deploymentName)
+    .AsAIAgent(new ChatClientAgentOptions
+    {
+        Name = "PersistentAgent",
+        ChatHistoryProvider = historyProvider,
+    });
+
+AgentSession session = await agent.CreateSessionAsync();
+await agent.RunAsync("My name is Alice.", session);
+
+// Simulate restart — extract session ID, create new provider with same ID
+var sessionId = historyProvider.GetSessionId(session);
+var restoredProvider = new FileChatHistoryProvider(historyDir, sessionId);
+
+AIAgent agent2 = client.GetChatClient(deploymentName)
+    .AsAIAgent(new ChatClientAgentOptions
+    {
+        ChatHistoryProvider = restoredProvider,
+    });
+
+AgentSession session2 = await agent2.CreateSessionAsync();
+await agent2.RunAsync("Do you remember my name?", session2); // → "Alice"
+```
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/04c-memory-session-aware.cs`
+
+---
 
 ![bg fit](./img/bg-alt2.png)
 

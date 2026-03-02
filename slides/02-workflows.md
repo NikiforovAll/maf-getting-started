@@ -73,11 +73,6 @@ Workflows are **directed graphs** — nodes are executors (functions or agents),
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt3.png)
 
@@ -136,11 +131,6 @@ foreach (WorkflowEvent evt in run.NewEvents)
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 
@@ -272,11 +262,6 @@ builder.WithOutputFrom(rewriteExec);
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt3.png)
 
@@ -446,11 +431,6 @@ await builder.Build().RunAsync();
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt1.png)
 
@@ -491,11 +471,6 @@ section {
 
 ---
 
-<style scoped>
-section {
-  font-size: 28px;
-}
-</style>
 
 ![bg fit](./img/bg-alt2.png)
 

@@ -17,8 +17,11 @@ using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
 
-var filePath = Path.Combine(Path.GetTempPath(), "maf-chat-history.json");
-Console.WriteLine($"History file: {filePath}");
+var historyDir = Path.Combine(Path.GetTempPath(), "maf-chat-history");
+Directory.CreateDirectory(historyDir);
+Console.WriteLine($"History dir: {historyDir}");
+
+var historyProvider = new FileChatHistoryProvider(historyDir);
 
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
@@ -30,7 +33,7 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCreden
             {
                 Instructions = "You are a friendly assistant. Keep your answers brief.",
             },
-            ChatHistoryProvider = new FileChatHistoryProvider(filePath),
+            ChatHistoryProvider = historyProvider,
         }
     );
 
@@ -39,7 +42,8 @@ AgentSession session = await agent.CreateSessionAsync();
 await agent.RunAsync("My name is Alice and I work at Contoso.", session);
 Console.WriteLine(await agent.RunAsync("What is my name and where do I work?", session));
 
-// Simulate restart — new agent, new session, same file
+// Simulate restart — new agent, new session, same session ID
+var sessionId = historyProvider.GetSessionId(session);
 AIAgent agent2 = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
     .AsAIAgent(
@@ -50,34 +54,55 @@ AIAgent agent2 = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCrede
             {
                 Instructions = "You are a friendly assistant. Keep your answers brief.",
             },
-            ChatHistoryProvider = new FileChatHistoryProvider(filePath),
+            ChatHistoryProvider = new FileChatHistoryProvider(historyDir, sessionId),
         }
     );
 
 AgentSession session2 = await agent2.CreateSessionAsync();
 Console.WriteLine(await agent2.RunAsync("Do you remember my name?", session2));
 
+var sessionFile = Path.Combine(historyDir, $"{sessionId}.json");
 AnsiConsole.Write(
-    new Panel(new JsonText(File.ReadAllText(filePath)))
-        .Header("Chat History")
+    new Panel(new JsonText(File.ReadAllText(sessionFile)))
+        .Header($"Chat History (session: {sessionId})")
         .Collapse()
         .BorderColor(Color.Yellow)
 );
 
-File.Delete(filePath);
+Directory.Delete(historyDir, recursive: true);
 
-// Simple flat-file provider — one file for all sessions (no session isolation)
-sealed class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
+// Session-aware provider — each session gets its own file via ProviderSessionState
+sealed class FileChatHistoryProvider : ChatHistoryProvider
 {
+    private readonly string _directory;
+    private readonly ProviderSessionState<SessionState> _sessionState;
+
+    public FileChatHistoryProvider(string directory, string? existingSessionId = null)
+    {
+        _directory = directory;
+        _sessionState = new ProviderSessionState<SessionState>(
+            _ => new SessionState(existingSessionId ?? Guid.NewGuid().ToString("N")[..8]),
+            nameof(FileChatHistoryProvider)
+        );
+    }
+
+    public string GetSessionId(AgentSession? session) =>
+        _sessionState.GetOrInitializeState(session).SessionId;
+
+    private string GetFilePath(string sessionId) => Path.Combine(_directory, $"{sessionId}.json");
+
     protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(
         InvokingContext context,
         CancellationToken cancellationToken = default
     )
     {
-        if (!File.Exists(filePath))
+        var state = _sessionState.GetOrInitializeState(context.Session);
+        var path = GetFilePath(state.SessionId);
+
+        if (!File.Exists(path))
             return new(Enumerable.Empty<ChatMessage>());
 
-        var json = File.ReadAllText(filePath);
+        var json = File.ReadAllText(path);
         var messages =
             JsonSerializer.Deserialize(json, ChatHistoryJsonContext.Default.ListChatMessage) ?? [];
         return new(messages.AsEnumerable());
@@ -88,10 +113,13 @@ sealed class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
         CancellationToken cancellationToken = default
     )
     {
+        var state = _sessionState.GetOrInitializeState(context.Session);
+        var path = GetFilePath(state.SessionId);
+
         List<ChatMessage> existing = [];
-        if (File.Exists(filePath))
+        if (File.Exists(path))
         {
-            var json = File.ReadAllText(filePath);
+            var json = File.ReadAllText(path);
             existing =
                 JsonSerializer.Deserialize(json, ChatHistoryJsonContext.Default.ListChatMessage)
                 ?? [];
@@ -101,10 +129,16 @@ sealed class FileChatHistoryProvider(string filePath) : ChatHistoryProvider
         existing.AddRange(context.ResponseMessages ?? []);
 
         File.WriteAllText(
-            path: filePath,
+            path,
             JsonSerializer.Serialize(existing, ChatHistoryJsonContext.Default.ListChatMessage)
         );
         return default;
+    }
+
+    sealed class SessionState(string sessionId)
+    {
+        [JsonPropertyName("sessionId")]
+        public string SessionId { get; } = sessionId;
     }
 }
 
