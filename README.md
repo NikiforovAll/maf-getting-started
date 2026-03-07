@@ -8,6 +8,8 @@ Samples for learning [Microsoft Agent Framework](https://learn.microsoft.com/en-
 - Azure CLI (`az login`)
 - Azure OpenAI resource with `gpt-4o-mini` deployment
 - `Cognitive Services OpenAI Contributor` role on the resource
+- Azure AI Foundry project (for Session 3 samples)
+- `Azure AI Developer` role on the Foundry project
 
 ## Quick start
 
@@ -36,6 +38,13 @@ dotnet run src/01-hello-agent.cs
 | 07b | `07b-agent-as-agui-client.cs` | AG-UI client — streaming console chat        |
 | 08a | `08a-agent-as-a2a-server.cs`  | A2A server — agent with discovery card       |
 | 08b | `08b-agent-as-a2a-client.cs`  | A2A client — call remote agent               |
+| 09  | `09-foundry-basics.cs`        | First Foundry agent — create, version, run   |
+| 10  | `10-foundry-tools.cs`         | Function tools on Foundry                    |
+| 11a | `11a-foundry-code-interpreter.cs` | Code Interpreter — Python sandbox        |
+| 11b | `11b-foundry-web-search.cs`   | Web Search — real-time queries + citations   |
+| 12  | `12-foundry-rag.cs`           | RAG — file upload, vector store, file search |
+| 13  | `13-foundry-memory.cs`        | Memory — cross-session recall via Foundry    |
+| 14  | `14-foundry-evaluations.cs`   | Evaluations — quality, safety, self-reflection |
 
 ### Client/server samples
 

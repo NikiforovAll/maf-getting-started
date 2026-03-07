@@ -1,0 +1,39 @@
+Event: Microsoft Zero To Hero Community - 2026
+Speaker: Oleksii Nikiforov
+Track / Category: AI / Machine Learning
+
+---
+
+Session 1: Microsoft Agent Framework — Foundations
+
+Microsoft Agent Framework (MAF) is the new unified platform for building AI agents in .NET — the successor to Semantic Kernel and AutoGen. In this hands-on session, we'll start from scratch and build agents through coding demos.
+
+You'll learn how to create your first AI agent, add tool calling so agents can take actions, build multi-turn conversations with memory, and implement custom session-aware chat history. Every concept is demonstrated with runnable single-file C# samples.
+
+By the end, you'll understand MAF's core building blocks: agents, tools, conversations, and memory — and be ready to build your own.
+
+Target audience: .NET developers interested in building AI-powered applications.
+
+---
+
+Session 2: Microsoft Agent Framework — Workflows, MCP, A2A & AG-UI
+
+Building on MAF foundations, this session covers advanced patterns: agent workflows and three industry-standard protocols for connecting agents to the outside world.
+
+You'll learn how to chain agents into sequential pipelines and compose function + agent workflows into graphs. Then we'll expose agents via MCP (Model Context Protocol) for dev tools and IDE integration, A2A (Agent-to-Agent) for cross-agent discovery and communication over HTTP, and AG-UI for web UIs with real-time SSE streaming.
+
+Every protocol is demonstrated end-to-end with both server and client code. By the end, you'll know which protocol to reach for depending on your scenario: MCP for tools, A2A for agents, AG-UI for end users.
+
+Target audience: .NET developers familiar with MAF basics or Session 1 attendees.
+
+---
+
+Session 3: Microsoft Agent Framework — Azure AI Foundry
+
+This session takes MAF agents to the cloud with Azure AI Foundry — the managed platform for server-side agent lifecycle, hosted tools, and built-in evaluations.
+
+You'll learn how to create Foundry-managed agents with versioning, use hosted tools (Code Interpreter for Python execution, Web Search for real-time queries), build RAG pipelines with file upload and vector stores, implement cross-session memory with Foundry Memory Stores, and evaluate agent quality and safety using groundedness, relevance, and content harm evaluators with a self-reflection loop.
+
+Same AIAgent API, dramatically richer capabilities — all demonstrated with runnable single-file C# demos.
+
+Target audience: .NET developers familiar with MAF basics or Session 1–2 attendees.

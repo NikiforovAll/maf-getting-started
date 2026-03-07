@@ -10,7 +10,8 @@
         "DOTNET_ENVIRONMENT": "Development",
         "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21147",
         "DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://localhost:21148",
-        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22239"
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22239",
+        "DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS": "true"
       }
     },
     "http": {
