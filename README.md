@@ -60,6 +60,14 @@ dotnet run src/08a-agent-as-a2a-server.cs   # Terminal 1
 dotnet run src/08b-agent-as-a2a-client.cs   # Terminal 2
 ```
 
+## Presentations
+
+| # | Title | Slides | Samples |
+|---|-------|--------|---------|
+| 1 | Foundations | [01-foundations](https://nikiforovall.blog/maf-getting-started/01-foundations.html) | 01 – 04c |
+| 2 | Workflows, MCP, A2A & AG-UI | [02-workflows](https://nikiforovall.blog/maf-getting-started/02-workflows.html) | 05a – 08b |
+| 3 | Azure AI Foundry | [03-azure-ai-foundry](https://nikiforovall.blog/maf-getting-started/03-azure-ai-foundry.html) | 09 – 14 |
+
 ## Resources
 
 - [MAF Documentation](https://learn.microsoft.com/en-us/agent-framework/overview)
