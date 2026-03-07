@@ -13,7 +13,7 @@ footer: ""
 ![bg fit](./img/bg-title.png)
 
 # **Microsoft Agent Framework**
-## Workflows, MCP & AG-UI
+## Workflows, MCP, A2A & AG-UI
 
 ---
 
