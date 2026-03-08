@@ -1,0 +1,72 @@
+title: 05c Workflows Composed Demo
+description: Walk through the hybrid function-plus-agent workflow sample in the workflows deck.
+version: 3
+demos:
+  - title: Intro
+    description: Frame composed workflows as the place where deterministic steps and agents meet.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05c-workflows-composed-start.md
+  - title: Package Directives
+    description: Start with the workflow, Azure OpenAI, and regex dependencies used by the sample.
+    steps:
+      - action: open
+        path: src/05c-workflows-composed.cs
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '1:11'
+        zoom: 2
+  - title: Inputs And Client
+    description: Capture the environment variables and the shared Azure OpenAI client.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '13:16'
+        zoom: 2
+  - title: Mask Executor
+    description: Show the pure function that redacts emails before any LLM call happens.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '18:21'
+        zoom: 2
+  - title: Rewriter Executor
+    description: Walk through the agent-backed executor that rewrites text while preserving redactions.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '23:38'
+        zoom: 2
+  - title: Validation Executor
+    description: Validate that the rewrite did not leak any email addresses.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '40:48'
+        zoom: 2
+  - title: Workflow Graph
+    description: Build the mask to rewrite to validate graph explicitly with AddEdge calls.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '50:55'
+        zoom: 2
+  - title: Sample Input
+    description: Show the PII-laden input that the pipeline will sanitize and rewrite.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '57:64'
+        zoom: 2
+  - title: Execution Output
+    description: Run the composed workflow and print the output from each completed executor.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '66:76'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on mixed deterministic and intelligent steps before moving into MCP.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05c-workflows-composed-end.md

@@ -1,0 +1,86 @@
+title: 04b Custom Memory Demo
+description: Walk through a custom flat-file ChatHistoryProvider in the foundations deck.
+version: 3
+scenes:
+  - title: Intro
+    description: Frame the custom provider sample as the next step after session serialization.
+    moves:
+      - action: openSlide
+        path: .demo/slides/04b-memory-custom-start.md
+  - title: Package Directives
+    description: Start with the script package dependencies, including the JSON viewer used for inspection.
+    moves:
+      - action: open
+        path: src/04b-memory-custom.cs
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '1:4'
+        zoom: 2
+  - title: Using Directives
+    description: Show the namespaces needed for JSON serialization, chat history, and console visualization.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '6:15'
+        zoom: 2
+  - title: Temp File Setup
+    description: Introduce the temporary file that will hold the persisted chat history.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '17:21'
+        zoom: 2
+  - title: Agent With Custom Provider
+    description: Configure the agent with ChatClientAgentOptions and a custom ChatHistoryProvider.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '23:35'
+        zoom: 2
+  - title: First Session Run
+    description: Create the first session and write history through the custom provider.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '37:40'
+        zoom: 2
+  - title: Restart Simulation
+    description: Build a second agent against the same file to simulate process restart.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '42:58'
+        zoom: 2
+  - title: Stored History View
+    description: Render the persisted JSON file so the stored conversation becomes visible.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '60:67'
+        zoom: 2
+  - title: Provider Declaration
+    description: Introduce the flat-file provider type and its single shared file limitation.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '69:70'
+        zoom: 2
+  - title: Read History
+    description: Show how the provider loads prior chat messages from disk.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '72:83'
+        zoom: 2
+  - title: Store History
+    description: Show how request and response messages are appended and written back to the file.
+    moves:
+      - action: highlight
+        path: src/04b-memory-custom.cs
+        position: '86:107'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on the tradeoff of a simple provider without session isolation.
+    moves:
+      - action: openSlide
+        path: .demo/slides/04b-memory-custom-end.md

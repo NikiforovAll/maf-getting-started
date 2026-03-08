@@ -34,10 +34,10 @@ dotnet run src/01-hello-agent.cs
 | 05c | `05c-workflows-composed.cs`   | Mixed function + agent workflow              |
 | 06  | `06-agent-as-mcp.cs`          | Expose agents as MCP server (stdio)          |
 | 06b | `06b-agent-as-mcp-client.cs`  | Consume remote MCP tools (Microsoft Learn)   |
-| 07  | `07-agent-as-agui.cs`         | AG-UI server — expose agent via HTTP+SSE     |
-| 07b | `07b-agent-as-agui-client.cs` | AG-UI client — streaming console chat        |
-| 08a | `08a-agent-as-a2a-server.cs`  | A2A server — agent with discovery card       |
-| 08b | `08b-agent-as-a2a-client.cs`  | A2A client — call remote agent               |
+| 07a | `07a-agent-as-a2a-server.cs`  | A2A server — agent with discovery card       |
+| 07b | `07b-agent-as-a2a-client.cs`  | A2A client — call remote agent               |
+| 08a | `08a-agent-as-agui.cs`        | AG-UI server — expose agent via HTTP+SSE     |
+| 08b | `08b-agent-as-agui-client.cs` | AG-UI client — streaming console chat        |
 | 09  | `09-foundry-basics.cs`        | First Foundry agent — create, version, run   |
 | 10  | `10-foundry-tools.cs`         | Function tools on Foundry                    |
 | 11a | `11a-foundry-code-interpreter.cs` | Code Interpreter — Python sandbox        |
@@ -51,13 +51,13 @@ dotnet run src/01-hello-agent.cs
 Some samples run as pairs:
 
 ```bash
-# AG-UI: server + client
-dotnet run src/07-agent-as-agui.cs          # Terminal 1
-dotnet run src/07b-agent-as-agui-client.cs  # Terminal 2
-
 # A2A: server + client
-dotnet run src/08a-agent-as-a2a-server.cs   # Terminal 1
-dotnet run src/08b-agent-as-a2a-client.cs   # Terminal 2
+dotnet run src/07a-agent-as-a2a-server.cs   # Terminal 1
+dotnet run src/07b-agent-as-a2a-client.cs   # Terminal 2
+
+# AG-UI: server + client
+dotnet run src/08a-agent-as-agui.cs         # Terminal 1
+dotnet run src/08b-agent-as-agui-client.cs  # Terminal 2
 ```
 
 ## Presentations

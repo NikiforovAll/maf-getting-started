@@ -1,0 +1,79 @@
+title: 01 Hello Agent Demo
+description: Walk through the first Microsoft Agent Framework sample in the foundations deck.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce the first agent sample.
+    steps:
+      - action: openSlide
+        path: .demo/slides/01-hello-agent-start.md
+  - title: Package Directives
+    description: Start with the script package dependencies required by the file-based sample.
+    steps:
+      - action: open
+        path: src/01-hello-agent.cs
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '1:3'
+        zoom: 2
+  - title: Using Directives
+    description: Show the namespaces that light up the Azure OpenAI and Agent Framework APIs.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '5:9'
+        zoom: 2
+  - title: Environment Setup
+    description: Capture the endpoint and deployment name from environment variables.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '11:12'
+        zoom: 2
+  - title: Azure OpenAI Client
+    description: Create the provider client and obtain the chat client for the deployment.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '14:15'
+        zoom: 2
+  - title: Agent Conversion
+    description: Convert the chat client into an agent with AsAIAgent and options.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '16:26'
+        zoom: 2
+  - title: Agent Options
+    description: Focus on the name and chat options configured for the agent.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '19:24'
+        zoom: 2
+  - title: Prompt And Temperature
+    description: Call out the system instructions and temperature that shape the response.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '22:23'
+        zoom: 2
+  - title: Non-Streaming Execution
+    description: Show the full non-streaming chunk from label to console output.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '28:30'
+        zoom: 2
+  - title: Streaming Execution
+    description: Move to the streaming chunk that yields updates as they arrive.
+    steps:
+      - action: highlight
+        path: src/01-hello-agent.cs
+        position: '32:38'
+        zoom: 2
+  - title: Wrap Up
+    description: Close with the key takeaways from the first agent sample.
+    steps:
+      - action: openSlide
+        path: .demo/slides/01-hello-agent-end.md

@@ -1,0 +1,107 @@
+title: 04c Session-Aware Memory Demo
+description: Walk through a session-aware ChatHistoryProvider in the foundations deck.
+version: 3
+demos:
+  - title: Intro
+    description: Frame the session-aware provider as the fix for the flat-file provider's shared-state limitation.
+    steps:
+      - action: openSlide
+        path: .demo/slides/04c-memory-session-aware-start.md
+  - title: Package Directives
+    description: Start with the script package dependencies, including the JSON viewer used for inspection.
+    steps:
+      - action: open
+        path: src/04c-memory-session-aware.cs
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '1:4'
+        zoom: 2
+  - title: Using Directives
+    description: Show the namespaces needed for JSON serialization, chat history, and session-aware provider state.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '6:15'
+        zoom: 2
+  - title: History Directory Setup
+    description: Create the history directory and the shared provider instance.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '17:24'
+        zoom: 2
+  - title: Agent Wiring
+    description: Configure the agent to use the shared session-aware history provider.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '26:38'
+        zoom: 2
+  - title: First Session Run
+    description: Run the first session and write conversation history under a provider-managed session id.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '40:43'
+        zoom: 2
+  - title: Restart With Session Id
+    description: Extract the session id and rebuild the agent with the same logical session.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '45:62'
+        zoom: 2
+  - title: Session File View
+    description: Show the session-specific JSON file that backs the restored conversation.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '64:72'
+        zoom: 2
+  - title: Provider Fields And Constructor
+    description: Introduce the provider state and constructor that seeds or restores a session id.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '74:87'
+        zoom: 2
+  - title: Session Id Access
+    description: Show the helper methods that expose and resolve the session-specific file path.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '89:92'
+        zoom: 2
+  - title: Read Session File
+    description: Show how the provider resolves the current session and loads only that session's history.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '94:108'
+        zoom: 2
+  - title: Store Session File
+    description: Show how new messages are appended to the current session-specific file.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '111:136'
+        zoom: 2
+  - title: Session State
+    description: End on the small record that carries the session identifier in provider state.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '138:142'
+        zoom: 2
+  - title: JSON Context
+    description: Close the code walkthrough on the source-generated serializer context.
+    steps:
+      - action: highlight
+        path: src/04c-memory-session-aware.cs
+        position: '145:147'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on session isolation before the foundations deck moves to its final takeaways.
+    steps:
+      - action: openSlide
+        path: .demo/slides/04c-memory-session-aware-end.md

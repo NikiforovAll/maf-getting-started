@@ -1,0 +1,44 @@
+title: 05a Workflows Demo
+description: Walk through the pure function workflow sample in the workflows deck.
+version: 3
+demos:
+  - title: Intro
+    description: Frame workflows as directed graphs built from plain functions.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05a-workflows-start.md
+  - title: Package Directives
+    description: Start with the workflow package used by the file-based sample.
+    steps:
+      - action: open
+        path: src/05a-workflows.cs
+      - action: highlight
+        path: src/05a-workflows.cs
+        position: '1:3'
+        zoom: 2
+  - title: Function Executors
+    description: Show how two plain functions become workflow executors.
+    steps:
+      - action: highlight
+        path: src/05a-workflows.cs
+        position: '5:9'
+        zoom: 2
+  - title: Workflow Graph
+    description: Build the uppercase to reverse graph and declare the output node.
+    steps:
+      - action: highlight
+        path: src/05a-workflows.cs
+        position: '11:13'
+        zoom: 2
+  - title: Execution Loop
+    description: Run the workflow and print each completed executor event.
+    steps:
+      - action: highlight
+        path: src/05a-workflows.cs
+        position: '15:22'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on pure transformations before moving to agent workflows.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05a-workflows-end.md

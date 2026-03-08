@@ -1,0 +1,65 @@
+title: 05b Workflows Agents Demo
+description: Walk through the sequential agent workflow sample in the workflows deck.
+version: 3
+demos:
+  - title: Intro
+    description: Frame agent workflows as streaming pipelines of specialized agents.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05b-workflows-agents-start.md
+  - title: Package Directives
+    description: Start with the workflow and Azure OpenAI packages needed for agent pipelines.
+    steps:
+      - action: open
+        path: src/05b-workflows-agents.cs
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '1:4'
+        zoom: 2
+  - title: Using Directives
+    description: Show the namespaces for Azure OpenAI, agents, workflows, and chat abstractions.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '6:10'
+        zoom: 2
+  - title: Client Setup
+    description: Capture the environment variables and convert the provider chat client to IChatClient.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '12:17'
+        zoom: 2
+  - title: Writer And Critic
+    description: Define the two specialized agents that make up the sequential pipeline.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '19:27'
+        zoom: 2
+  - title: Sequential Builder
+    description: Focus on the one line that turns the agent list into a workflow pipeline.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '29:29'
+        zoom: 2
+  - title: Streaming Run Setup
+    description: Create the input and start a streaming execution for the workflow.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '31:37'
+        zoom: 2
+  - title: Streaming Event Loop
+    description: Show how AgentResponseUpdateEvent is consumed to stream each agent response.
+    steps:
+      - action: highlight
+        path: src/05b-workflows-agents.cs
+        position: '39:57'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on streaming agent pipelines before moving to composed workflows.
+    steps:
+      - action: openSlide
+        path: .demo/slides/05b-workflows-agents-end.md

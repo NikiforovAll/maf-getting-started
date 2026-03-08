@@ -1,0 +1,74 @@
+title: 07a Agent As A2A Demo
+description: Walk through exposing an agent over A2A and then discovering it from an A2A client.
+version: 3
+demos:
+  - title: Intro
+    description: Frame A2A as the protocol for agents discovering and calling other agents over HTTP.
+    steps:
+      - action: openSlide
+        path: .demo/slides/07a-agent-as-a2a-start.md
+  - title: Server Packages
+    description: Start with the web and A2A packages used by the server sample.
+    steps:
+      - action: open
+        path: src/07a-agent-as-a2a-server.cs
+      - action: highlight
+        path: src/07a-agent-as-a2a-server.cs
+        position: '1:18'
+        zoom: 2
+  - title: Server Setup
+    description: Show the ASP.NET setup and JSON configuration required by the A2A protocol.
+    steps:
+      - action: highlight
+        path: src/07a-agent-as-a2a-server.cs
+        position: '20:32'
+        zoom: 2
+  - title: A2A Agent
+    description: Create the agent that will be exposed through the A2A endpoint.
+    steps:
+      - action: highlight
+        path: src/07a-agent-as-a2a-server.cs
+        position: '34:41'
+        zoom: 2
+  - title: Agent Card
+    description: Walk through the metadata that other agents use to discover capabilities.
+    steps:
+      - action: highlight
+        path: src/07a-agent-as-a2a-server.cs
+        position: '43:60'
+        zoom: 2
+  - title: A2A Mapping
+    description: Focus on the MapA2A call and well-known agent card endpoint.
+    steps:
+      - action: highlight
+        path: src/07a-agent-as-a2a-server.cs
+        position: '62:69'
+        zoom: 2
+  - title: Client Packages
+    description: Switch to the A2A client sample and show the minimal dependencies.
+    steps:
+      - action: open
+        path: src/07b-agent-as-a2a-client.cs
+      - action: highlight
+        path: src/07b-agent-as-a2a-client.cs
+        position: '1:4'
+        zoom: 2
+  - title: Agent Discovery
+    description: Resolve the remote agent card and turn it into an AIAgent instance.
+    steps:
+      - action: highlight
+        path: src/07b-agent-as-a2a-client.cs
+        position: '6:10'
+        zoom: 2
+  - title: Client Run
+    description: End on the single RunAsync call that talks to the remote agent.
+    steps:
+      - action: highlight
+        path: src/07b-agent-as-a2a-client.cs
+        position: '12:12'
+        zoom: 2
+  - title: Wrap Up
+    description: Close on agent-to-agent discovery before moving to user-facing AG-UI.
+    steps:
+      - action: openSlide
+        path: .demo/slides/07a-agent-as-a2a-end.md

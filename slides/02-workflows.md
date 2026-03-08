@@ -607,7 +607,7 @@ section {
 
 ![bg fit](./img/bg-alt1.png)
 
-# 08a — A2A Server
+# 07a — A2A Server
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
@@ -629,7 +629,7 @@ await app.RunAsync();
 
 ![bg fit](./img/bg-alt2.png)
 
-# 08b — A2A Client
+# 07b — A2A Client
 
 ```ts
 #:package Microsoft.Agents.AI.A2A@1.0.0-preview.260225.1
@@ -655,8 +655,8 @@ Console.WriteLine(await agent.RunAsync("What is the weather in Amsterdam?"));
 
 # Demo
 
-## `dotnet run src/08a-agent-as-a2a-server.cs`
-## `dotnet run src/08b-agent-as-a2a-client.cs`
+## `dotnet run src/07a-agent-as-a2a-server.cs`
+## `dotnet run src/07b-agent-as-a2a-client.cs`
 
 ---
 
@@ -733,7 +733,7 @@ section {
 
 ![bg fit](./img/bg-alt1.png)
 
-# 07-agent-as-agui.cs — AG-UI Server
+# 08a-agent-as-agui.cs — AG-UI Server
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
@@ -773,7 +773,7 @@ section {
 
 ![bg fit](./img/bg-alt2.png)
 
-# 07b — AG-UI Client
+# 08b — AG-UI Client
 
 ```ts
 #:package Microsoft.Agents.AI.AGUI@1.0.0-preview.260225.1
@@ -806,8 +806,8 @@ await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(
 
 # Demo
 
-## `dotnet run src/07-agent-as-agui.cs`
-## `dotnet run src/07b-agent-as-agui-client.cs`
+## `dotnet run src/08a-agent-as-agui.cs`
+## `dotnet run src/08b-agent-as-agui-client.cs`
 
 ---
 
