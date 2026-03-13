@@ -1,5 +1,5 @@
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc2
-#:package Azure.AI.Projects@1.2.0-beta.5
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
+#:package Azure.AI.Projects@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Spectre.Console@0.50.0
 #:package OpenTelemetry@1.12.0

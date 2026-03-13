@@ -1,6 +1,6 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
-#:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.0.0-preview.260311.1
 #:package Azure.AI.OpenAI@2.8.0-beta.1
 #:package Azure.Identity@1.18.0
 

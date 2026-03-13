@@ -1,4 +1,4 @@
-#:package Microsoft.Agents.AI.A2A@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.A2A@1.0.0-preview.260311.1
 
 using A2A;
 using Microsoft.Agents.AI;

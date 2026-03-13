@@ -47,8 +47,10 @@ section {
 1. **What is MAF?** — The merger of Semantic Kernel + AutoGen
 2. **Your First Agent** — `AzureOpenAIClient` → `.AsAIAgent()`, Run & Stream
 3. **Tools** — Function tools, `[Description]`, agent-as-tool
-4. **Multi-Turn Conversations** — `AgentSession`, chat history
-5. **Memory & Persistence** — Serialization, session restore
+4. **DI Hosting** — `AddAIAgent`, class-based tools from the container
+5. **Agent Skills** — Portable packages of domain expertise
+6. **Multi-Turn Conversations** — `AgentSession`, chat history
+7. **Memory & Persistence** — Serialization, session restore
 
 ---
 
@@ -76,7 +78,7 @@ MAF unifies the best of both worlds:
 
 <div class="key">
 
-**MAF** = Microsoft Agent Framework — the production-ready successor (public preview, `1.0.0-rc2`)
+**MAF** = Microsoft Agent Framework — the production-ready successor (public preview, `1.0.0-rc4`)
 
 </div>
 
@@ -150,7 +152,7 @@ dotnet run src/01-hello-agent.cs
 # 01-hello-agent.cs — Package Directives
 
 ```ts
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
 #:package Azure.AI.OpenAI@2.8.0-beta.1
 #:package Azure.Identity@1.18.0
 
@@ -198,8 +200,7 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCreden
 Console.WriteLine(await agent.RunAsync("Tell me a one-sentence fun fact."));
 
 // Streaming — process tokens as they arrive
-await foreach (var update in agent.RunStreamingAsync(
-    "Tell me a one-sentence fun fact."))
+await foreach (var update in agent.RunStreamingAsync("Tell me a one-sentence fun fact."))
 {
     Console.WriteLine(update);
 }
@@ -343,6 +344,177 @@ Console.WriteLine(
 # Demo
 
 ## `dotnet run src/02-tools.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **DI Hosting**
+
+## Agents and tools from the container
+
+---
+
+![bg fit](./img/bg-alt2.png)
+
+# 02b-tools-di.cs — Register Agent in DI
+
+```ts
+var builder = Host.CreateApplicationBuilder(args);
+
+IChatClient chatClient = new AzureOpenAIClient(
+        new Uri(endpoint), new DefaultAzureCredential())
+    .GetChatClient(deploymentName)
+    .AsIChatClient();
+builder.Services.AddSingleton(chatClient);
+
+builder.Services.AddSingleton<WeatherService>();
+
+builder.AddAIAgent(
+        "weather-agent",
+        instructions: "You are a helpful weather assistant.",
+        description: "An agent that answers weather questions.",
+        chatClientServiceKey: null)
+    .WithAITool(sp => sp.GetRequiredService<WeatherService>().AsAITool());
+```
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# 02b-tools-di.cs — Class-Based Tool
+
+```ts
+internal sealed class WeatherService
+{
+    [Description("Get the weather for a given location.")]
+    public string GetWeather([Description("The location")] string location) =>
+        $"The weather in {location} is cloudy with a high of 15°C.";
+
+    public AITool AsAITool() => AIFunctionFactory.Create(GetWeather);
+}
+```
+
+<div class="key">
+
+**`WithAITool(sp => ...)`** — tools resolved from DI, not static functions. Dependencies are injected normally.
+
+</div>
+
+---
+
+![bg fit](./img/bg-alt1.png)
+
+# 02b-tools-di.cs — Resolve & Run
+
+```ts
+using var host = builder.Build();
+
+var agent = host.Services.GetRequiredKeyedService<AIAgent>("weather-agent");
+
+Console.WriteLine(await agent.RunAsync("What's the weather in Amsterdam and Paris?"));
+```
+
+<div class="tip">
+
+**Agents are keyed services** — resolve with `GetRequiredKeyedService<AIAgent>("name")`
+
+</div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/02b-tools-di.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **Agent Skills**
+
+## Portable packages of domain expertise
+
+---
+
+![bg fit](./img/bg-alt2.png)
+
+# What are Agent Skills?
+
+Modular packages of instructions, references, and assets that agents load **on demand**.
+
+| Stage | What Happens | Context Cost |
+|-------|-------------|-------------|
+| **Discover** | Names + descriptions injected into system prompt | ~100 tokens/skill |
+| **Load** | Agent calls `load_skill` when task matches | < 5000 tokens |
+| **Read** | Agent reads references/assets as needed | On demand |
+
+<div class="key">
+
+**Progressive disclosure** — agents only load what they need, keeping the context window lean
+
+</div>
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# Skill Structure
+
+```
+skills/
+└── code-review/
+    ├── SKILL.md              ← Frontmatter + instructions
+    └── references/
+        └── STYLE_GUIDE.md    ← Reference loaded on demand
+```
+
+```yaml
+---
+name: code-review
+description: Review code for quality, security, and best practices.
+metadata:
+  author: demo
+  version: "1.0"
+---
+```
+
+---
+
+![bg fit](./img/bg-alt1.png)
+
+# 02c-skills.cs — Wiring Skills
+
+```ts
+var skillsProvider = new FileAgentSkillsProvider(skillPath: skillsDir);
+
+AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+    .GetChatClient(deploymentName)
+    .AsIChatClient()
+    .AsAIAgent(new ChatClientAgentOptions
+    {
+        Name = "SkillsAgent",
+        ChatOptions = new ChatOptions
+        {
+            Instructions = "You are a helpful assistant.",
+        },
+        AIContextProviders = [skillsProvider],
+    });
+```
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/02c-skills.cs`
 
 ---
 
@@ -727,5 +899,5 @@ await agent2.RunAsync("Do you remember my name?", session2); // → "Alice"
 
 ![bg fit](./img/bg-title.png)
 
-## **Next: Workflows & MCP**
+## **Next: Workflows,A2A, AG-UI & MCP**
 ### Executors, Pipelines & Agent-as-MCP-Server

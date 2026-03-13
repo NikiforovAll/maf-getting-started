@@ -1,0 +1,72 @@
+title: 02b DI Hosting Demo
+description: Walk through DI-based agent registration with class-based tools from the container.
+version: 3
+demos:
+  - title: Intro
+    description: Frame the DI hosting segment.
+    steps:
+      - action: openSlide
+        path: .demo/slides/02b-tools-di-start.md
+  - title: Package Directives
+    description: Show the hosting and DI packages needed on top of the core MAF packages.
+    steps:
+      - action: open
+        path: src/02b-tools-di.cs
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '1:6'
+        zoom: 2
+  - title: Using Directives
+    description: Highlight the hosting and DI namespaces alongside the MAF ones.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '8:15'
+        zoom: 2
+  - title: Host Builder And ChatClient
+    description: Create the host builder and register IChatClient as a singleton.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '23:28'
+        zoom: 2
+  - title: Register Tool Dependencies
+    description: Register the WeatherService class in the container.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '30:31'
+        zoom: 2
+  - title: AddAIAgent With DI Tool
+    description: Register the agent and wire a tool resolved from the container.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '33:41'
+        zoom: 2
+  - title: WithAITool Factory
+    description: Focus on the factory lambda that resolves the tool from DI.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '41:41'
+        zoom: 2
+  - title: Resolve And Run
+    description: Build the host, resolve the agent as a keyed service, and run it.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '43:49'
+        zoom: 2
+  - title: WeatherService Class
+    description: Show the class-based tool with Description attributes and AsAITool method.
+    steps:
+      - action: highlight
+        path: src/02b-tools-di.cs
+        position: '53:60'
+        zoom: 2
+  - title: Wrap Up
+    description: Close with DI hosting takeaways.
+    steps:
+      - action: openSlide
+        path: .demo/slides/02b-tools-di-end.md

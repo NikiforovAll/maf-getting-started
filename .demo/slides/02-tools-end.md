@@ -13,4 +13,4 @@ layout: default
 layout: section
 ---
 
-# Next up: multi-turn conversations
+# Next up: DI hosting & agent skills

@@ -91,7 +91,7 @@ Same **`AIAgent`** / **`RunAsync()`** API surface — the abstraction doesn't ch
 
 **New package:**
 ```
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc2
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
 #:package Azure.AI.Projects@1.2.0-beta.5
 ```
 

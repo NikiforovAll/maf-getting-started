@@ -1,7 +1,8 @@
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc2
-#:package Azure.AI.Projects@1.2.0-beta.5
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
+#:package Azure.AI.Projects@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:property EnablePreviewFeatures=true
+#:property NoWarn=OPENAI001
 
 using Azure.AI.Projects;
 using Azure.Identity;
@@ -25,7 +26,7 @@ string userScope = $"user_{Environment.MachineName}";
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
 // MemorySearchTool — Foundry managed memory, persists across sessions
-MemorySearchTool memorySearchTool = new(memoryStoreName, userScope) { UpdateDelay = 1 };
+MemorySearchPreviewTool memorySearchTool = new(memoryStoreName, userScope) { UpdateDelay = 1 };
 
 AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
     model: deploymentName,

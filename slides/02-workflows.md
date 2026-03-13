@@ -397,7 +397,7 @@ section {
 # 06-agent-as-mcp.cs — Server Setup
 
 ```ts
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
 #:package Azure.AI.OpenAI@2.8.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Microsoft.Extensions.AI@10.3.0
@@ -612,7 +612,7 @@ section {
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
 #:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.0.0-preview.260225.1
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
 
 AIAgent agent = client.GetChatClient(deploymentName)
     .AsIChatClient()
@@ -738,7 +738,7 @@ section {
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
 #:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.0.0-preview.260225.1
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc2
+#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAGUI();              // register AG-UI JSON serialization

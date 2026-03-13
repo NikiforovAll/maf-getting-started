@@ -1,6 +1,6 @@
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc2
-#:package Azure.AI.Projects@1.2.0-beta.5
-#:package Azure.AI.Projects.OpenAI@1.0.0-beta.5
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
+#:package Azure.AI.Projects@2.0.0-beta.1
+#:package Azure.AI.Projects.OpenAI@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Microsoft.Extensions.AI@10.3.0
 #:property EnablePreviewFeatures=true
@@ -57,7 +57,7 @@ Console.WriteLine($"File uploaded: {uploaded.Id}");
 
 // 2. Create vector store
 var vectorStore = await vectorStoresClient.CreateVectorStoreAsync(
-    new() { FileIds = { uploaded.Id }, Name = "contoso-products" }
+    options: new() { FileIds = { uploaded.Id }, Name = "contoso-products" }
 );
 string vectorStoreId = vectorStore.Value.Id;
 Console.WriteLine($"Vector store created: {vectorStoreId}");

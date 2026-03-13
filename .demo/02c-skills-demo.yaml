@@ -1,0 +1,85 @@
+title: 02c Agent Skills Demo
+description: Walk through the Agent Skills pattern with FileAgentSkillsProvider and progressive disclosure.
+version: 3
+demos:
+  - title: Intro
+    description: Frame the agent skills segment.
+    steps:
+      - action: openSlide
+        path: .demo/slides/02c-skills-start.md
+  - title: Package Directives
+    description: Show the packages and the experimental warning suppression.
+    steps:
+      - action: open
+        path: src/02c-skills.cs
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '1:5'
+        zoom: 2
+  - title: Skills Provider Setup
+    description: Show how skills are discovered from a directory path.
+    steps:
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '18:29'
+        zoom: 2
+  - title: FileAgentSkillsProvider
+    description: Focus on the provider instantiation line.
+    steps:
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '31:31'
+        zoom: 2
+  - title: Agent With Context Providers
+    description: Wire the skills provider via AIContextProviders on ChatClientAgentOptions.
+    steps:
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '33:43'
+        zoom: 2
+  - title: AIContextProviders
+    description: Focus on the context providers array that enables skill discovery.
+    steps:
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '41:41'
+        zoom: 2
+  - title: Skill Structure
+    description: Show the SKILL.md file that defines the code-review skill.
+    steps:
+      - action: open
+        path: src/skills/code-review/SKILL.md
+      - action: highlight
+        path: src/skills/code-review/SKILL.md
+        position: '1:7'
+        zoom: 2
+  - title: Skill Instructions
+    description: Walk through the review checklist and process in the skill body.
+    steps:
+      - action: highlight
+        path: src/skills/code-review/SKILL.md
+        position: '9:30'
+        zoom: 1.5
+  - title: Reference Document
+    description: Show the style guide reference that the agent can load on demand.
+    steps:
+      - action: open
+        path: src/skills/code-review/references/STYLE_GUIDE.md
+      - action: highlight
+        path: src/skills/code-review/references/STYLE_GUIDE.md
+        position: '1:22'
+        zoom: 1.5
+  - title: Code Review Invocation
+    description: Show the vulnerable code snippet and the agent invocation.
+    steps:
+      - action: open
+        path: src/02c-skills.cs
+      - action: highlight
+        path: src/02c-skills.cs
+        position: '45:58'
+        zoom: 2
+  - title: Wrap Up
+    description: Close with agent skills takeaways.
+    steps:
+      - action: openSlide
+        path: .demo/slides/02c-skills-end.md
