@@ -2,6 +2,7 @@
 #:package Azure.AI.Projects@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Microsoft.Extensions.AI@10.3.0
+#:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
 #:property NoWarn=OPENAI001
 
@@ -10,6 +11,7 @@ using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI.Responses;
+using Spectre.Console;
 
 var endpoint =
     Environment.GetEnvironmentVariable("AZURE_AI_PROJECT_ENDPOINT")
@@ -29,24 +31,53 @@ AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
     tools: [new HostedWebSearchTool()]
 );
 
-Console.WriteLine("--- Web Search ---");
+AnsiConsole.Write(new Rule("[bold blue]Web Search[/]").LeftJustified());
+
 AgentResponse response = await agent.RunAsync("What are the latest features in .NET 10?");
 
-Console.WriteLine($"Answer: {response.Text}\n");
+AnsiConsole.Write(
+    new Panel(Markup.Escape(response.Text))
+        .Header("[bold green]Answer[/]")
+        .BorderColor(Color.Green)
+        .Expand()
+);
 
 // Extract URL citations
-Console.WriteLine("--- Sources ---");
-foreach (
-    var annotation in response
-        .Messages.SelectMany(m => m.Contents)
-        .SelectMany(c => c.Annotations ?? [])
-)
+var citations = response
+    .Messages.SelectMany(m => m.Contents)
+    .SelectMany(c => c.Annotations ?? [])
+    .Where(a => a.RawRepresentation is UriCitationMessageAnnotation)
+    .Select(a => (UriCitationMessageAnnotation)a.RawRepresentation!)
+    .ToList();
+
+if (citations.Count > 0)
 {
-    if (annotation.RawRepresentation is UriCitationMessageAnnotation urlCitation)
+    var table = new Table()
+        .Border(TableBorder.Rounded)
+        .BorderColor(Color.Cyan1)
+        .AddColumn("[bold]Title[/]")
+        .AddColumn("[bold]URL[/]")
+        .Expand();
+
+    foreach (var citation in citations)
     {
-        Console.WriteLine($"  - {urlCitation.Title}: {urlCitation.Uri}");
+        table.AddRow(
+            Markup.Escape(citation.Title ?? ""),
+            $"[link={citation.Uri}]{Markup.Escape(citation.Uri?.ToString() ?? "")}[/]"
+        );
     }
+
+    AnsiConsole.Write(
+        new Panel(table).Header("[bold cyan]Sources[/]").BorderColor(Color.Cyan1).Expand()
+    );
 }
 
-await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
-Console.WriteLine("\nAgent deleted.");
+if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/]?"))
+{
+    await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
+    AnsiConsole.MarkupLine("[green]Agent deleted.[/]");
+}
+else
+{
+    AnsiConsole.MarkupLine("[yellow]Agent kept. Remember to clean up manually.[/]");
+}

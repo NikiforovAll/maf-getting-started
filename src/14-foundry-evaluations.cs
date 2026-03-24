@@ -6,6 +6,7 @@
 #:package Microsoft.Extensions.AI.Evaluation@10.3.0
 #:package Microsoft.Extensions.AI.Evaluation.Quality@10.3.0
 #:package Microsoft.Extensions.AI.Evaluation.Safety@10.3.0-preview.1.26109.11
+#:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
 
 using Azure.AI.OpenAI;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
 using Microsoft.Extensions.AI.Evaluation.Safety;
+using Spectre.Console;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using ChatRole = Microsoft.Extensions.AI.ChatRole;
 
@@ -48,6 +50,14 @@ ChatConfiguration chatConfiguration = safetyConfig.ToChatConfiguration(
 );
 
 const string AgentName = "EvalAgent";
+const string Question = "What are the main benefits of using Azure AI Foundry?";
+const string Context = """
+    Azure AI Foundry is a platform for building, deploying, and managing AI applications.
+    Benefits include: unified dev environment, built-in safety features (content filtering, red teaming),
+    scalable infrastructure, integration with Azure services, evaluation tools for quality and safety,
+    support for RAG patterns with vector search, and enterprise compliance features.
+    """;
+
 AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
     name: AgentName,
     model: deploymentName,
@@ -56,114 +66,108 @@ AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
 
 try
 {
-    const string Question = "What are the main benefits of using Azure AI Foundry?";
-    const string Context = """
-        Azure AI Foundry is a platform for building, deploying, and managing AI applications.
-        Benefits include: unified dev environment, built-in safety features (content filtering, red teaming),
-        scalable infrastructure, integration with Azure services, evaluation tools for quality and safety,
-        support for RAG patterns with vector search, and enterprise compliance features.
-        """;
+    AnsiConsole.Write(new Rule("[bold blue]Evaluations[/]").LeftJustified());
 
-    // 1. Self-Reflection with Groundedness
-    Console.WriteLine("=== Self-Reflection with Groundedness ===\n");
-    await RunSelfReflection(agent, Question, Context, chatConfiguration);
+    AnsiConsole.Write(
+        new Panel(Markup.Escape(Context.Trim()))
+            .Header("[bold blue]Grounding Context (passed to agent prompt & evaluator)[/]")
+            .BorderColor(Color.Blue)
+            .Expand()
+    );
+    AnsiConsole.Write(
+        new Panel(Markup.Escape(Question))
+            .Header("[bold yellow]Question[/]")
+            .BorderColor(Color.Yellow)
+            .Expand()
+    );
 
-    // 2. Combined Quality + Safety
-    Console.WriteLine("\n=== Quality + Safety Evaluation ===\n");
-    await RunQualityAndSafety(agent, Question, chatConfiguration);
-}
-finally
-{
-    await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
-    Console.WriteLine("\nAgent deleted.");
-}
+    // Get agent response
+    var session = await agent.CreateSessionAsync();
+    AgentResponse agentResponse = await agent.RunAsync(
+        $"Context: {Context}\n\nQuestion: {Question}",
+        session
+    );
 
-static async Task RunSelfReflection(
-    AIAgent agent,
-    string question,
-    string context,
-    ChatConfiguration config
-)
-{
-    GroundednessEvaluator evaluator = new();
-    GroundednessEvaluatorContext groundingContext = new(context);
+    AnsiConsole.Write(
+        new Panel(Markup.Escape(agentResponse.Text))
+            .Header("[bold green]Response[/]")
+            .BorderColor(Color.Green)
+            .Expand()
+    );
 
-    string currentPrompt = $"Context: {context}\n\nQuestion: {question}";
+    // Evaluate: groundedness + quality + safety
+    AnsiConsole.Write(new Rule("[bold blue]Running Evaluators[/]").LeftJustified());
 
-    for (int i = 0; i < 3; i++)
-    {
-        Console.WriteLine($"Iteration {i + 1}/3:");
-
-        var session = await agent.CreateSessionAsync();
-        AgentResponse agentResponse = await agent.RunAsync(currentPrompt, session);
-        string responseText = agentResponse.Text;
-
-        Console.WriteLine($"  Response: {responseText[..Math.Min(120, responseText.Length)]}...");
-
-        List<ChatMessage> messages = [new(ChatRole.User, currentPrompt)];
-        ChatResponse chatResponse = new(new ChatMessage(ChatRole.Assistant, responseText));
-
-        EvaluationResult result = await evaluator.EvaluateAsync(
-            messages,
-            chatResponse,
-            config,
-            additionalContext: [groundingContext]
-        );
-
-        NumericMetric groundedness = result.Get<NumericMetric>(
-            GroundednessEvaluator.GroundednessMetricName
-        );
-        double score = groundedness.Value ?? 0;
-        Console.WriteLine(
-            $"  Groundedness: {score:F1}/5 ({groundedness.Interpretation?.Rating})\n"
-        );
-
-        if (score >= 4.0 || i == 2)
-            break;
-
-        currentPrompt = $"""
-            Context: {context}
-            Your previous answer scored {score}/5 on groundedness.
-            Previous answer: {responseText}
-            Improve your answer to be more grounded in the context.
-            Question: {question}
-            """;
-    }
-}
-
-static async Task RunQualityAndSafety(AIAgent agent, string question, ChatConfiguration config)
-{
     CompositeEvaluator evaluator = new([
+        new GroundednessEvaluator(),
         new RelevanceEvaluator(),
         new CoherenceEvaluator(),
         new ContentHarmEvaluator(),
     ]);
 
-    var session = await agent.CreateSessionAsync();
-    AgentResponse agentResponse = await agent.RunAsync(question, session);
+    List<ChatMessage> messages = [new(ChatRole.User, Question)];
+    ChatResponse chatResponse = new(new ChatMessage(ChatRole.Assistant, agentResponse.Text));
+    GroundednessEvaluatorContext groundingContext = new(Context);
 
-    Console.WriteLine(
-        $"Response: {agentResponse.Text[..Math.Min(120, agentResponse.Text.Length)]}...\n"
+    EvaluationResult result = await evaluator.EvaluateAsync(
+        messages,
+        chatResponse,
+        chatConfiguration,
+        additionalContext: [groundingContext]
     );
 
-    List<ChatMessage> messages = [new(ChatRole.User, question)];
-    ChatResponse chatResponse = new(new ChatMessage(ChatRole.Assistant, agentResponse.Text));
-
-    EvaluationResult result = await evaluator.EvaluateAsync(messages, chatResponse, config);
+    // Display results
+    var table = new Table()
+        .Border(TableBorder.Rounded)
+        .BorderColor(Color.Cyan1)
+        .AddColumn("[bold]Metric[/]")
+        .AddColumn("[bold]Score[/]")
+        .AddColumn("[bold]Rating[/]")
+        .AddColumn("[bold]Failed[/]")
+        .Expand();
 
     foreach (var metric in result.Metrics.Values)
     {
         if (metric is NumericMetric n)
         {
-            Console.WriteLine(
-                $"  {n.Name, -25} Score: {n.Value:F1}/5  Rating: {n.Interpretation?.Rating}  Failed: {n.Interpretation?.Failed}"
+            Color color =
+                (n.Value ?? 0) >= 4.0 ? Color.Green
+                : (n.Value ?? 0) >= 2.0 ? Color.Yellow
+                : Color.Red;
+            table.AddRow(
+                Markup.Escape(n.Name),
+                $"[{color}]{n.Value:F1}/5[/]",
+                n.Interpretation?.Rating.ToString() ?? "",
+                (n.Interpretation?.Failed ?? false) ? "[red]Yes[/]" : "[green]No[/]"
             );
         }
         else if (metric is BooleanMetric b)
         {
-            Console.WriteLine(
-                $"  {b.Name, -25} Value: {b.Value}  Rating: {b.Interpretation?.Rating}  Failed: {b.Interpretation?.Failed}"
+            table.AddRow(
+                Markup.Escape(b.Name),
+                b.Value?.ToString() ?? "",
+                b.Interpretation?.Rating.ToString() ?? "",
+                (b.Interpretation?.Failed ?? false) ? "[red]Yes[/]" : "[green]No[/]"
             );
         }
+    }
+
+    AnsiConsole.Write(
+        new Panel(table)
+            .Header("[bold cyan]Evaluation Results[/]")
+            .BorderColor(Color.Cyan1)
+            .Expand()
+    );
+}
+finally
+{
+    if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/]?"))
+    {
+        await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
+        AnsiConsole.MarkupLine("[green]Agent deleted.[/]");
+    }
+    else
+    {
+        AnsiConsole.MarkupLine("[yellow]Agent kept. Remember to clean up manually.[/]");
     }
 }

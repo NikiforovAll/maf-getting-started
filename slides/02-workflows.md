@@ -475,7 +475,6 @@ await using var mcpClient = await McpClient.CreateAsync(
         Name = "Microsoft Learn MCP"
     }));
 
-// Discover tools and pass to agent
 IList<McpClientTool> mcpTools = await mcpClient.ListToolsAsync();
 
 AIAgent agent = client.GetChatClient(deploymentName)
@@ -578,7 +577,7 @@ section {
 
 ![bg fit](./img/bg-alt1.png)
 
-# 07a — A2A Server
+# A2A Server
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
@@ -600,7 +599,7 @@ await app.RunAsync();
 
 ![bg fit](./img/bg-alt2.png)
 
-# 07b — A2A Client
+# A2A Client
 
 ```ts
 #:package Microsoft.Agents.AI.A2A@1.0.0-preview.260225.1
@@ -704,7 +703,7 @@ section {
 
 ![bg fit](./img/bg-alt1.png)
 
-# 08a-agent-as-agui.cs — AG-UI Server
+# AG-UI Server
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
@@ -744,7 +743,7 @@ section {
 
 ![bg fit](./img/bg-alt2.png)
 
-# 08b — AG-UI Client
+# AG-UI Client
 
 ```ts
 #:package Microsoft.Agents.AI.AGUI@1.0.0-preview.260225.1

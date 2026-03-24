@@ -3,15 +3,18 @@
 #:package Azure.AI.Projects.OpenAI@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Microsoft.Extensions.AI@10.3.0
+#:package OpenAI@2.8.0
+#:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
+#:property NoWarn=OPENAI001
 
 using Azure.AI.Projects;
-using Azure.AI.Projects.OpenAI;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using OpenAI.Assistants;
 using OpenAI.Files;
-using OpenAI.Responses;
+using Spectre.Console;
 
 var endpoint =
     Environment.GetEnvironmentVariable("AZURE_AI_PROJECT_ENDPOINT")
@@ -51,16 +54,37 @@ File.WriteAllText(
     """
 );
 
-Console.WriteLine("Uploading knowledge base...");
-OpenAIFile uploaded = filesClient.UploadFile(tempFile, FileUploadPurpose.Assistants);
-Console.WriteLine($"File uploaded: {uploaded.Id}");
+AnsiConsole.Write(new Rule("[bold blue]RAG with File Search[/]").LeftJustified());
+
+OpenAIFile uploaded = await AnsiConsole
+    .Status()
+    .Spinner(Spinner.Known.Dots)
+    .StartAsync(
+        "Uploading knowledge base...",
+        async _ =>
+        {
+            var file = filesClient.UploadFile(tempFile, FileUploadPurpose.Assistants);
+            AnsiConsole.MarkupLine($"[dim]File uploaded:[/] {file.Value.Filename}");
+            return file;
+        }
+    );
 
 // 2. Create vector store
-var vectorStore = await vectorStoresClient.CreateVectorStoreAsync(
-    options: new() { FileIds = { uploaded.Id }, Name = "contoso-products" }
-);
+var vectorStore = await AnsiConsole
+    .Status()
+    .Spinner(Spinner.Known.Dots)
+    .StartAsync(
+        "Creating vector store...",
+        async _ =>
+        {
+            var vs = await vectorStoresClient.CreateVectorStoreAsync(
+                options: new() { FileIds = { uploaded.Id }, Name = "contoso-products" }
+            );
+            AnsiConsole.MarkupLine($"[dim]Vector store created:[/] {vs.Value.Id}");
+            return vs;
+        }
+    );
 string vectorStoreId = vectorStore.Value.Id;
-Console.WriteLine($"Vector store created: {vectorStoreId}");
 
 // 3. Create agent with HostedFileSearchTool
 AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
@@ -71,7 +95,7 @@ AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
 );
 
 // 4. Multi-turn Q&A
-Console.WriteLine("\n--- RAG Q&A ---");
+AnsiConsole.Write(new Rule("[bold blue]Multi-turn Q&A[/]").LeftJustified());
 var session = await agent.CreateSessionAsync();
 
 string[] questions =
@@ -83,28 +107,61 @@ string[] questions =
 
 foreach (var question in questions)
 {
-    Console.WriteLine($"\nQ: {question}");
+    AnsiConsole.Write(
+        new Panel(Markup.Escape(question))
+            .Header("[bold yellow]Question[/]")
+            .BorderColor(Color.Yellow)
+            .Expand()
+    );
+
     AgentResponse response = await agent.RunAsync(question, session);
-    Console.WriteLine($"A: {response.Text}");
+
+    AnsiConsole.Write(
+        new Panel(Markup.Escape(response.Text))
+            .Header("[bold green]Answer[/]")
+            .BorderColor(Color.Green)
+            .Expand()
+    );
 
     // Show file citations
-    foreach (
-        var annotation in response
-            .Messages.SelectMany(m => m.Contents)
-            .SelectMany(c => c.Annotations ?? [])
-    )
+    var citations = response
+        .Messages.SelectMany(m => m.Contents)
+        .SelectMany(c => c.Annotations ?? [])
+        .Where(a => a.RawRepresentation is TextAnnotationUpdate)
+        .Select(a => (TextAnnotationUpdate)a.RawRepresentation!)
+        .ToList();
+
+    if (citations.Count > 0)
     {
-        if (annotation.RawRepresentation is TextAnnotationUpdate citation)
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Cyan1)
+            .AddColumn("[bold]File ID[/]")
+            .Expand();
+
+        foreach (var citation in citations)
         {
-            Console.WriteLine($"   [Citation: file {citation.OutputFileId}]");
+            table.AddRow(Markup.Escape(citation.OutputFileId ?? ""));
         }
+
+        AnsiConsole.Write(
+            new Panel(table).Header("[bold cyan]Citations[/]").BorderColor(Color.Cyan1).Expand()
+        );
     }
 }
 
 // 5. Cleanup
-Console.WriteLine("\n--- Cleanup ---");
-await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
-await vectorStoresClient.DeleteVectorStoreAsync(vectorStoreId);
-await filesClient.DeleteFileAsync(uploaded.Id);
-File.Delete(tempFile);
-Console.WriteLine("All resources cleaned up.");
+if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/] and all resources?"))
+{
+    await Task.WhenAll(
+        aiProjectClient.Agents.DeleteAgentAsync(agent.Name),
+        vectorStoresClient.DeleteVectorStoreAsync(vectorStoreId),
+        filesClient.DeleteFileAsync(uploaded.Id)
+    );
+    File.Delete(tempFile);
+    AnsiConsole.MarkupLine("[green]All resources cleaned up.[/]");
+}
+else
+{
+    AnsiConsole.MarkupLine("[yellow]Resources kept. Remember to clean up manually.[/]");
+}

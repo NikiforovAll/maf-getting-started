@@ -1,0 +1,44 @@
+title: 09b Foundry Persistent Session Demo
+description: Walk through server-side conversations that persist beyond sessions.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce persistent conversations in Foundry.
+    steps:
+      - action: openSlide
+        path: .demo/slides/09b-foundry-persistent-session-start.md
+  - title: Create Agent
+    description: Create a Foundry agent for the persistent session demo.
+    steps:
+      - action: open
+        path: src/09b-foundry-persistent-session.cs
+      - action: highlight
+        path: src/09b-foundry-persistent-session.cs
+        position: '24:28'
+        zoom: 2
+  - title: Conversations Client
+    description: ProjectConversationsClient creates server-side conversations visible in the Portal.
+    steps:
+      - action: highlight
+        path: src/09b-foundry-persistent-session.cs
+        position: '33:37'
+        zoom: 2
+  - title: Session 1
+    description: First session establishes context with two prompts.
+    steps:
+      - action: highlight
+        path: src/09b-foundry-persistent-session.cs
+        position: '41:49'
+        zoom: 2
+  - title: Session 2 Resume
+    description: New session with the same conversation ID — the agent remembers everything.
+    steps:
+      - action: highlight
+        path: src/09b-foundry-persistent-session.cs
+        position: '52:57'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap persistent sessions before moving to function tools.
+    steps:
+      - action: openSlide
+        path: .demo/slides/09b-foundry-persistent-session-end.md

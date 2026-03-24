@@ -1,0 +1,58 @@
+title: 11a Foundry Code Interpreter Demo
+description: Walk through HostedCodeInterpreterTool — Python sandbox execution on the server.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce the Code Interpreter hosted tool.
+    steps:
+      - action: openSlide
+        path: .demo/slides/11a-foundry-code-interpreter-start.md
+  - title: Create Agent
+    description: One-liner HostedCodeInterpreterTool gives the agent a Python sandbox.
+    steps:
+      - action: open
+        path: src/11a-foundry-code-interpreter.cs
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '30:35'
+        zoom: 2
+  - title: Run
+    description: Ask the agent to solve a math problem with Python.
+    steps:
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '39:41'
+        zoom: 2
+  - title: Response Parsing
+    description: Walk the response contents to see the full execution flow.
+    steps:
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '44:46'
+        zoom: 2
+  - title: TextContent
+    description: Text before and after the tool call — thinking vs final answer.
+    steps:
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '49:57'
+        zoom: 2
+  - title: Code Tool Call
+    description: CodeInterpreterToolCallContent contains the Python code the agent wrote.
+    steps:
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '60:72'
+        zoom: 2
+  - title: Code Tool Result
+    description: CodeInterpreterToolResultContent returns the execution output.
+    steps:
+      - action: highlight
+        path: src/11a-foundry-code-interpreter.cs
+        position: '75:88'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap Code Interpreter before moving to web search.
+    steps:
+      - action: openSlide
+        path: .demo/slides/11a-foundry-code-interpreter-end.md

@@ -2,6 +2,7 @@
 #:package Azure.AI.Projects@2.0.0-beta.1
 #:package Azure.Identity@1.18.0
 #:package Microsoft.Extensions.AI@10.3.0
+#:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
 
 using System.ComponentModel;
@@ -9,6 +10,7 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Spectre.Console;
 
 var endpoint =
     Environment.GetEnvironmentVariable("AZURE_AI_PROJECT_ENDPOINT")
@@ -59,5 +61,13 @@ AIAgent existing = await aiProjectClient.GetAIAgentAsync(name: AgentName, tools:
 Console.WriteLine("\n--- Retrieved agent ---");
 Console.WriteLine(await existing.RunAsync("What time is it in UTC?"));
 
-await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
-Console.WriteLine("\nAgent deleted.");
+// Cleanup — deletes server-side agent and all its versions
+if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/]?"))
+{
+    await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
+    AnsiConsole.MarkupLine("[green]Agent deleted.[/]");
+}
+else
+{
+    AnsiConsole.MarkupLine("[yellow]Agent kept. Remember to clean up manually.[/]");
+}

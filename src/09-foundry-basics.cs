@@ -48,25 +48,17 @@ AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredent
 
 // Create a server-side agent — managed by Foundry with name + version semantics
 Console.WriteLine("--- Creating Foundry Agent ---");
-AIAgent agent = (
-    await aiProjectClient.CreateAIAgentAsync(
+ChatClientAgent chatAgent = await aiProjectClient.CreateAIAgentAsync(
         name: AgentName,
         model: deploymentName,
         instructions: "You are a friendly assistant. Keep your answers brief."
-    )
-)
+    );
+AIAgent agent = chatAgent
     .AsBuilder()
     .UseOpenTelemetry(sourceName: SourceName)
     .Build();
 
 Console.WriteLine($"Agent created: {agent.Name}");
-
-// Retrieve latest version by name — same AIAgent API
-AIAgent retrieved = (await aiProjectClient.GetAIAgentAsync(name: AgentName))
-    .AsBuilder()
-    .UseOpenTelemetry(sourceName: SourceName)
-    .Build();
-Console.WriteLine($"Retrieved by name: {retrieved.Name}");
 
 // Parent span groups both calls — visible in Aspire dashboard
 // Same trace ID appears in Foundry portal Traces tab

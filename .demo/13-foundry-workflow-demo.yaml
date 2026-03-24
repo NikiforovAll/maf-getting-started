@@ -1,0 +1,44 @@
+title: 13 Foundry Workflow Demo
+description: Walk through declarative multi-agent orchestration via YAML workflows.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce Foundry workflows.
+    steps:
+      - action: openSlide
+        path: .demo/slides/13-foundry-workflow-start.md
+  - title: Create Agents
+    description: Create the Storyteller and Critic agents that the workflow will orchestrate.
+    steps:
+      - action: open
+        path: src/13-foundry-workflow.cs
+      - action: highlight
+        path: src/13-foundry-workflow.cs
+        position: '30:42'
+        zoom: 2
+  - title: Workflow YAML
+    description: Declarative definition with OnConversationStart trigger and InvokeAzureAgent steps.
+    steps:
+      - action: highlight
+        path: src/13-foundry-workflow.cs
+        position: '47:63'
+        zoom: 2
+  - title: Register Workflow
+    description: CreateAgentVersionAsync registers the workflow as a server-side agent version.
+    steps:
+      - action: highlight
+        path: src/13-foundry-workflow.cs
+        position: '76:85'
+        zoom: 2
+  - title: Run With Streaming
+    description: RunStreamingAsync streams results from each agent in the workflow.
+    steps:
+      - action: highlight
+        path: src/13-foundry-workflow.cs
+        position: '90:120'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap workflows before moving to evaluations.
+    steps:
+      - action: openSlide
+        path: .demo/slides/13-foundry-workflow-end.md

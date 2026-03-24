@@ -1,0 +1,58 @@
+title: 10 Foundry Tools Demo
+description: Walk through function tools on Foundry — server stores schemas, client provides implementations.
+version: 3
+demos:
+  - title: Intro
+    description: Frame function tools on Foundry.
+    steps:
+      - action: openSlide
+        path: .demo/slides/10-foundry-tools-start.md
+  - title: Tool Definitions
+    description: Plain C# methods with Description attributes become tool schemas.
+    steps:
+      - action: open
+        path: src/10-foundry-tools.cs
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '21:27'
+        zoom: 2
+  - title: Tool Registration
+    description: AIFunctionFactory.Create wraps methods into AITool instances.
+    steps:
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '33:33'
+        zoom: 2
+  - title: Create Agent With Tools
+    description: CreateAIAgentAsync stores tool schemas server-side.
+    steps:
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '36:41'
+        zoom: 2
+  - title: Non-Streaming Run
+    description: Agent calls tools automatically and returns the combined answer.
+    steps:
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '44:48'
+        zoom: 2
+  - title: Streaming Run
+    description: Same tool invocation with streaming output.
+    steps:
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '51:57'
+        zoom: 2
+  - title: Retrieve With Tools
+    description: GetAIAgentAsync requires tools parameter for automatic invocation.
+    steps:
+      - action: highlight
+        path: src/10-foundry-tools.cs
+        position: '60:62'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap function tools before moving to hosted tools.
+    steps:
+      - action: openSlide
+        path: .demo/slides/10-foundry-tools-end.md

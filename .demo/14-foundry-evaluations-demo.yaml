@@ -1,0 +1,58 @@
+title: 14 Foundry Evaluations Demo
+description: Walk through quality and safety evaluation with CompositeEvaluator.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce evaluations in Foundry.
+    steps:
+      - action: openSlide
+        path: .demo/slides/14-foundry-evaluations-start.md
+  - title: Evaluator LLM
+    description: AzureOpenAIClient provides the LLM judge for quality evaluations.
+    steps:
+      - action: open
+        path: src/14-foundry-evaluations.cs
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '39:41'
+        zoom: 2
+  - title: Safety Config
+    description: ContentSafetyServiceConfiguration connects to Foundry's content safety endpoint.
+    steps:
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '44:50'
+        zoom: 2
+  - title: Context And Question
+    description: Grounding context and question that will be evaluated.
+    steps:
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '53:59'
+        zoom: 2
+  - title: Create Agent And Run
+    description: Create agent, get response with context injection.
+    steps:
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '61:89'
+        zoom: 2
+  - title: CompositeEvaluator
+    description: Compose groundedness, relevance, coherence, and content harm evaluators.
+    steps:
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '101:106'
+        zoom: 2
+  - title: Evaluate
+    description: EvaluateAsync scores the response with all evaluators in a single pass.
+    steps:
+      - action: highlight
+        path: src/14-foundry-evaluations.cs
+        position: '108:117'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap evaluations to close the Foundry session.
+    steps:
+      - action: openSlide
+        path: .demo/slides/14-foundry-evaluations-end.md

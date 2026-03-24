@@ -46,8 +46,7 @@ footer: ""
 4. **Function Tools** — Same pattern, server-side management
 5. **Hosted Tools** — Code Interpreter, Web Search
 6. **RAG via Foundry** — File upload, vector stores, file search
-7. **Memory** — Cross-session recall with `MemorySearchTool`
-8. **Evaluations** — Quality, safety, and self-reflection
+7. **Evaluations** — Quality, safety, and self-reflection
 
 ---
 
@@ -65,9 +64,9 @@ th,td {font-size: 20px;}
 
 ![bg fit](./img/bg-alt2.png)
 
-# Azure OpenAI vs Azure AI Foundry
+# Azure OpenAI vs MAF + Azure AI Foundry
 
-| | Azure OpenAI (Sessions 1–2) | Azure AI Foundry |
+| | MAF | Azure AI Foundry |
 |--|--|--|
 | **Agent lifecycle** | In-process only | Server-side (named + versioned) |
 | **Tools** | Client-side `AIFunction` | Client-side + **hosted** (Code, Search, Web) |
@@ -173,7 +172,7 @@ await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
 ```ts
 // Each CreateAIAgentAsync call creates a new version
 AIAgent v1 = await aiProjectClient.CreateAIAgentAsync(
-    name: "MyAgent", model: "gpt-4o-mini",
+    name: "MyAgent", model: "gpt-4o-mini", 
     instructions: "You are helpful.");
 
 AIAgent v2 = await aiProjectClient.CreateAIAgentAsync(
@@ -184,29 +183,22 @@ AIAgent v2 = await aiProjectClient.CreateAIAgentAsync(
 AIAgent latest = await aiProjectClient.GetAIAgentAsync(name: "MyAgent");
 ```
 
+<br/>
+
 <div class="tip">
 
 Agent definitions are **immutable** after creation — create a new version to change instructions or tools
 
 </div>
 
----
-
-<!-- _class: chapter -->
 
 ![bg fit](./img/bg-section.png)
 
-# Demo
-
-## `dotnet run src/09-foundry-basics.cs`
-
 ---
-
-![bg fit](./img/bg-section.png)
 
 # **Observability**
 
-## OpenTelemetry + Aspire Dashboard + Foundry Traces
+## OpenTelemetry + Foundry Traces
 
 ---
 
@@ -214,11 +206,11 @@ Agent definitions are **immutable** after creation — create a new version to c
 
 # Two Sides of the Trace
 
-| | Client-side (OTEL) | Server-side (Foundry) |
-|--|--|--|
-| **What** | Agent spans, chat calls, duration | Token counts, cost, response IDs |
-| **Where** | Aspire Dashboard / any OTLP backend | Foundry Portal → Traces tab |
-| **How** | `.UseOpenTelemetry()` + OTLP exporter | Automatic — built into Foundry |
+|           | OTEL                                  | Server-side (Foundry)            |
+| --------- | ------------------------------------- | -------------------------------- |
+| **What**  | Agent spans, chat calls, duration     | Token counts, cost, response IDs |
+| **Where** | Aspire Dashboard / any OTLP backend   | Foundry Portal → Traces tab      |
+| **How**   | `.UseOpenTelemetry()` + OTLP exporter | Automatic — built into Foundry   |
 
 <br/>
 
@@ -269,11 +261,89 @@ await agent.RunAsync("Tell me a fun fact about Azure.");
 await agent.RunStreamingAsync("Tell me a fun fact about .NET.");
 ```
 
+<br/>
+
 <div class="tip">
 
 Print the **Trace ID** → find the same trace in Foundry Portal with token counts and cost
 
 </div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/09-foundry-basics.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **Persistent Sessions**
+
+## Server-side conversations with Foundry
+
+---
+
+![bg fit](./img/bg-alt2.png)
+
+# Creating a Foundry Conversation
+
+```ts
+// Create a server-side conversation — persisted in Foundry, visible in Portal
+ProjectConversationsClient conversationsClient = aiProjectClient
+    .GetProjectOpenAIClient()
+    .GetProjectConversationsClient();
+
+ProjectConversation conversation = await conversationsClient.CreateProjectConversationAsync();
+
+// Link session to the conversation — history stored server-side
+AgentSession session = await agent.CreateSessionAsync(conversation.Id);
+Console.WriteLine(await agent.RunAsync("My name is Alex.", session));
+```
+
+<br/>
+
+<div class="key">
+
+`conversation.Id` is the only thing you need to store — Foundry keeps the full thread server-side
+
+</div>
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# Resuming a Conversation
+
+```ts
+// New session, same conversation ID — agent remembers everything
+AgentSession resumed = await agent.CreateSessionAsync(conversation.Id);
+Console.WriteLine(await agent.RunAsync("What's my name?", resumed));
+// → "Your name is Alex."
+```
+
+<br/>
+
+<div class="tip">
+
+Conversations **persist beyond sessions** — store the ID in your DB, resume from any process
+
+</div>
+
+---
+
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/09b-foundry-persistent-session.cs`
 
 ---
 
@@ -385,33 +455,13 @@ AgentResponse response = await agent.RunAsync(
     "Solve x^3 - 6x^2 + 11x - 6 = 0. Plot the function and mark the roots.");
 ```
 
+<br/>
+
 <div class="tip">
 
 `HostedCodeInterpreterTool` — the agent writes Python, Foundry runs it in a sandbox, returns results + files
 
 </div>
-
----
-
-![bg fit](./img/bg-alt1.png)
-
-# Extracting Code & Results
-
-```ts
-// Get the Python code that was executed
-var toolCall = response.Messages.SelectMany(m => m.Contents)
-    .OfType<CodeInterpreterToolCallContent>().FirstOrDefault();
-
-if (toolCall?.Inputs?.OfType<DataContent>().FirstOrDefault() is { } code)
-    Console.WriteLine(Encoding.UTF8.GetString(code.Data.ToArray()));
-
-// Get the execution result
-var toolResult = response.Messages.SelectMany(m => m.Contents)
-    .OfType<CodeInterpreterToolResultContent>().FirstOrDefault();
-
-if (toolResult?.Outputs?.OfType<TextContent>().FirstOrDefault() is { } result)
-    Console.WriteLine(result.Text);
-```
 
 ---
 
@@ -457,6 +507,8 @@ foreach (var annotation in response.Messages
 }
 ```
 
+<br/>
+
 <div class="key">
 
 `HostedWebSearchTool` — agent searches the web autonomously and returns **annotated citations**
@@ -494,8 +546,6 @@ foreach (var annotation in response.Messages
 | 3. **Create agent** | `CreateAIAgentAsync(tools: [HostedFileSearchTool])` | Agent grounded on your data |
 | 4. **Ask questions** | `agent.RunAsync()` | Grounded answers with citations |
 | 5. **Cleanup** | Delete agent, vector store, file | No orphan resources |
-
-<br/>
 
 <div class="key">
 
@@ -561,121 +611,37 @@ Console.WriteLine(await agent.RunAsync("Which product supports CI/CD?", session)
 
 ![bg fit](./img/bg-section.png)
 
-# **Memory**
+# **Foundry Workflows**
 
-## Cross-session recall with Foundry Memory Stores
-
----
-
-![bg fit](./img/bg-alt2.png)
-
-# Memory Search Tool
-
-```ts
-// Memory store must be pre-created via Azure Portal
-string memoryStoreName = Environment.GetEnvironmentVariable("AZURE_AI_MEMORY_STORE_ID")!;
-
-// Scope isolates memories per user
-string userScope = $"user_{Environment.MachineName}";
-
-MemorySearchTool memorySearchTool = new(memoryStoreName, userScope)
-{
-    UpdateDelay = 1,  // seconds before new memories are indexed
-};
-
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    model: deploymentName, name: "MemoryAgent",
-    instructions: "Remember user preferences across conversations.",
-    tools: [((ResponseTool)memorySearchTool).AsAITool()]);
-```
-
----
-
-![bg fit](./img/bg-alt3.png)
-
-# Cross-Session Recall
-
-```ts
-// Session 1: Share preferences
-await agent.RunAsync("My name is Alex. I prefer dark mode in all my tools.");
-
-// Wait for memory indexing
-await Task.Delay(3000);
-
-// Session 2: Test recall — agent remembers without chat history
-await agent.RunAsync("What do you know about me?");
-// → "Your name is Alex and you prefer dark mode."
-```
-
-<div class="key">
-
-Memories **persist beyond sessions** — user-scoped, automatically extracted and indexed by Foundry
-
-</div>
-
----
-
-![bg fit](./img/bg-alt1.png)
-
-# Inspecting Memory Results
-
-```ts
-foreach (var message in response.Messages)
-{
-    if (message.RawRepresentation is MemorySearchToolCallResponseItem memoryResult)
-    {
-        foreach (var result in memoryResult.Results)
-        {
-            Console.WriteLine($"  [{result.MemoryItem.Scope}] {result.MemoryItem.Content}");
-        }
-    }
-}
-```
-
-<div class="tip">
-
-Memory stores are **long-lived resources** — they persist even after the agent is deleted
-
-</div>
-
----
-
-<!-- _class: chapter -->
-
-![bg fit](./img/bg-section.png)
-
-# Demo
-
-## `dotnet run src/13-foundry-memory.cs`
-
----
-
-![bg fit](./img/bg-section.png)
-
-# **Evaluations**
-
-## Quality, safety, and self-reflection
+## Declarative multi-agent orchestration
 
 ---
 
 ![bg fit](./img/bg-alt2.png)
 
-# Why Evaluate?
+# Workflow YAML — Storyteller + Critic
 
-**Before production, you need to know:**
-
-| Dimension | Evaluator | What it measures |
-|-----------|-----------|-----------------|
-| **Groundedness** | `GroundednessEvaluator` | Are answers grounded in provided context? |
-| **Relevance** | `RelevanceEvaluator` | Does the answer address the question? |
-| **Coherence** | `CoherenceEvaluator` | Is the response well-structured and logical? |
-| **Safety** | `ContentHarmEvaluator` | Does the response contain harmful content? |
-
-<br/>
+```yaml
+kind: Workflow
+trigger:
+  kind: OnConversationStart
+  id: story_critic_workflow
+  actions:
+    - kind: InvokeAzureAgent
+      id: storyteller_step
+      conversationId: =System.ConversationId
+      agent:
+        name: StorytellerAgent
+    - kind: InvokeAzureAgent
+      id: critic_step
+      conversationId: =System.ConversationId
+      agent:
+        name: CriticAgent
+```
 
 <div class="key">
 
-`Microsoft.Extensions.AI.Evaluation` — LLM-as-judge for quality, Azure AI Foundry for safety
+Declarative YAML defines the agent graph — **registered server-side**, visible in Foundry Portal's Workflows tab
 
 </div>
 
@@ -687,72 +653,100 @@ section {font-size: 26px;}
 
 ![bg fit](./img/bg-alt3.png)
 
-# Self-Reflection Loop
-
-Based on [Reflexion (NeurIPS 2023)](https://arxiv.org/abs/2303.11366) — verbal reinforcement learning
+# Registering & Running a Workflow
 
 ```ts
-GroundednessEvaluator evaluator = new();
+// Register workflow in Foundry
+AgentVersion workflowVersion = await aiProjectClient.Agents
+    .CreateAgentVersionAsync(WorkflowName, new(workflowDefinition));
 
-for (int i = 0; i < 3; i++)
+// Run with streaming — each agent produces a separate message
+ChatClientAgent workflowAgent = await aiProjectClient.GetAIAgentAsync(name: WorkflowName);
+
+ChatClientAgentRunOptions runOptions = new(
+    new ChatOptions { ConversationId = conversation.Id });
+
+await foreach (var update in workflowAgent.RunStreamingAsync(prompt, session, runOptions))
 {
-    AgentResponse agentResponse = await agent.RunAsync(currentPrompt, session);
-    EvaluationResult result = await evaluator.EvaluateAsync(
-        messages, chatResponse, config, additionalContext: [groundingContext]);
-
-    double score = result.Get<NumericMetric>(
-        GroundednessEvaluator.GroundednessMetricName).Value ?? 0;
-
-    if (score >= 4.0) break;
-
-    currentPrompt = $"Your answer scored {score}/5. Improve grounding.";
+    Console.Write(update.Text);
 }
 ```
 
+<div class="tip">
+
+Same `RunStreamingAsync` API — Foundry orchestrates the agents server-side, streams results back
+
+</div>
+
 ---
 
-![bg fit](./img/bg-alt1.png)
+<!-- _class: chapter -->
 
-# Combined Quality + Safety
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## `dotnet run src/13-foundry-workflow.cs`
+
+---
+
+![bg fit](./img/bg-section.png)
+
+# **Evaluations**
+
+## Quality and safety scoring
+
+---
+
+<style scoped>
+th,td {font-size: 20px;}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# Available Evaluators
+
+| Dimension | Evaluator | What it measures |
+|-----------|-----------|-----------------|
+| **Groundedness** | `GroundednessEvaluator` | Are answers grounded in provided context? |
+| **Relevance** | `RelevanceEvaluator` | Does the answer address the question? |
+| **Coherence** | `CoherenceEvaluator` | Is the response well-structured and logical? |
+| **Safety** | `ContentHarmEvaluator` | Violence, self-harm, sexual, hate content |
+
+<br/>
+
+<div class="key">
+
+Quality evaluators use an **LLM judge**, safety evaluators use the **Azure AI Foundry content safety service**
+
+</div>
+
+---
+
+![bg fit](./img/bg-alt3.png)
+
+# Running Evaluations
 
 ```ts
 CompositeEvaluator evaluator = new([
+    new GroundednessEvaluator(),
     new RelevanceEvaluator(),
     new CoherenceEvaluator(),
     new ContentHarmEvaluator(),
 ]);
 
-// Safety evaluators use Azure AI Foundry content safety endpoint
-ContentSafetyServiceConfiguration safetyConfig = new(
-    credential: credential, endpoint: new Uri(endpoint));
-
+// Safety evaluators need the Foundry content safety endpoint
+ContentSafetyServiceConfiguration safetyConfig = new(credential, new Uri(endpoint));
 ChatConfiguration config = safetyConfig.ToChatConfiguration(
     originalChatConfiguration: new ChatConfiguration(chatClient));
 
 EvaluationResult result = await evaluator.EvaluateAsync(
-    messages, chatResponse, config);
-```
-
----
-
-![bg fit](./img/bg-alt2.png)
-
-# Evaluation Output
-
-```
-=== Quality + Safety Evaluation ===
-
-  Relevance               Score: 5.0/5  Rating: Good
-  Coherence               Score: 4.5/5  Rating: Good
-  ContentHarm.Violence    Value: False   Rating: Good    Failed: False
-  ContentHarm.SelfHarm    Value: False   Rating: Good    Failed: False
-  ContentHarm.Sexual      Value: False   Rating: Good    Failed: False
-  ContentHarm.HateUnfair  Value: False   Rating: Good    Failed: False
+    messages, chatResponse, config, additionalContext: [new GroundednessEvaluatorContext(context)]);
 ```
 
 <div class="tip">
 
-Quality evaluators use an **LLM judge**, safety evaluators use the **Azure AI Foundry content safety service**
+`Microsoft.Extensions.AI.Evaluation` — compose multiple evaluators in a single pass
 
 </div>
 
@@ -780,9 +774,7 @@ Quality evaluators use an **LLM judge**, safety evaluators use the **Azure AI Fo
 
 4. **File upload → vector store → `HostedFileSearchTool`** — RAG in ~10 lines
 
-5. **`MemorySearchTool`** — cross-session memory, user-scoped, Foundry-managed
-
-6. **`GroundednessEvaluator` + `ContentHarmEvaluator`** — evaluate quality and safety before production
+5. **`GroundednessEvaluator` + `ContentHarmEvaluator`** — evaluate quality and safety before production
 
 ---
 

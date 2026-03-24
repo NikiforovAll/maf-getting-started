@@ -1,0 +1,58 @@
+title: 09 Foundry Basics Demo
+description: Walk through the first Azure AI Foundry agent with OpenTelemetry tracing.
+version: 3
+demos:
+  - title: Intro
+    description: Introduce server-managed Foundry agents.
+    steps:
+      - action: openSlide
+        path: .demo/slides/09-foundry-basics-start.md
+  - title: Package Directives
+    description: Show the Foundry and OpenTelemetry package dependencies.
+    steps:
+      - action: open
+        path: src/09-foundry-basics.cs
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '1:8'
+        zoom: 2
+  - title: AIProjectClient
+    description: The new Foundry entry point replacing AzureOpenAIClient.
+    steps:
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '47:47'
+        zoom: 2
+  - title: Create Agent With OpenTelemetry
+    description: CreateAIAgentAsync returns a server-managed agent, UseOpenTelemetry adds client tracing.
+    steps:
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '51:59'
+        zoom: 2
+  - title: Trace Correlation
+    description: Parent activity links client spans with Foundry server traces via the same Trace ID.
+    steps:
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '65:66'
+        zoom: 2
+  - title: Non-Streaming Execution
+    description: RunAsync returns the full response.
+    steps:
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '69:70'
+        zoom: 2
+  - title: Streaming Execution
+    description: RunStreamingAsync yields updates as they arrive.
+    steps:
+      - action: highlight
+        path: src/09-foundry-basics.cs
+        position: '73:78'
+        zoom: 2
+  - title: Wrap Up
+    description: Recap Foundry basics before moving to persistent sessions.
+    steps:
+      - action: openSlide
+        path: .demo/slides/09-foundry-basics-end.md
