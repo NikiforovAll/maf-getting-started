@@ -61,7 +61,7 @@ footer: ""
 
 | Pattern | Use Case | API |
 |---------|----------|-----|
-| **Function Workflow** | Pure data transformations, no LLM | `BindAsExecutor()` + `WorkflowBuilder` |
+| **Function Workflow** | Deterministic execution | `BindAsExecutor()` + `WorkflowBuilder` |
 | **Agent Workflow** | LLM-powered multi-agent pipelines | `AgentWorkflowBuilder.BuildSequential()` |
 | **Composed Workflow** | Mix functions + agents in one graph | `WorkflowBuilder` + `AddEdge()` |
 
@@ -75,10 +75,30 @@ Workflows are **directed graphs** — nodes are executors (functions or agents),
 
 ---
 
+<style scoped>
+th,td {font-size: 20px;}
+</style>
+
+![bg fit](./img/bg-alt2.png)
+
+# Workflow Building Blocks
+
+| Building Block | API | Description |
+| -------------- | --- | ----------- |
+| **Executor** | `Func<T,R>.BindAsExecutor()` | A node in the workflow graph |
+| **Direct Edge** | `builder.AddEdge(A, B)` | One-to-one — A's output flows to B |
+| **Conditional Edge** | `AddEdge<T>(A, B, condition)` | Fires only when predicate is true |
+| **Fan-Out** | `AddFanOutEdge(A, [B, C])` | Broadcast to parallel targets |
+| **Fan-In Barrier** | `AddFanInBarrierEdge([A, B], C)` | Wait for **all** sources, then deliver |
+| **Output** | `builder.WithOutputFrom(B)` | Designates the final output node(s) |
+| **Run** | `InProcessExecution.RunAsync()` | Executes the workflow |
+
+---
+
 
 ![bg fit](./img/bg-alt3.png)
 
-# Function Workflow — Pure Transformations
+# Function Workflow — Programmatic
 
 ```ts
 // Bind plain functions as workflow executors
@@ -91,6 +111,8 @@ var reverse = reverseFunc.BindAsExecutor("ReverseTextExecutor");
 // Build graph: uppercase → reverse
 WorkflowBuilder builder = new(uppercase);
 builder.AddEdge(uppercase, reverse).WithOutputFrom(reverse);
+
+// Compile the workflow
 var workflow = builder.Build();
 ```
 
@@ -223,59 +245,6 @@ th,td {font-size: 20px;}
 
 ---
 
-<style scoped>
-th,td {font-size: 20px;}
-</style>
-
-![bg fit](./img/bg-alt2.png)
-
-# Workflow Building Blocks
-
-| Building Block | API                                            | Description                      |
-| -------------- | ---------------------------------------------- | -------------------------------- |
-| **Executor**   | `Func<T,R>.BindAsExecutor()`                   | A node in the workflow graph     |
-| **Edge**       | `builder.AddEdge(A, B)`                        | Connects two executors (A → B)   |
-| **Output**     | `builder.WithOutputFrom(B)`                    | Designates the final output node |
-| **Run**        | `InProcessExecution.RunAsync(workflow, input)` | Executes the workflow            |
-| **StreamingRun** | `InProcessExecution.RunStreamingAsync()`     | Executes with streaming events   |
-| **Events**     | `ExecutorCompletedEvent`, `AgentResponseUpdateEvent` | Emitted per completed node |
-
----
-
-<style scoped>
-section {
-  font-size: 26px;
-}
-</style>
-
-![bg fit](./img/bg-alt1.png)
-
-# Executors — Generic Types Define the Contract
-
-```ts
-// Func<TInput, TOutput> — sync, wrapped to ValueTask internally
-Func<string, string> upper = s => s.ToUpperInvariant();
-var upperExec = upper.BindAsExecutor("Upper");
-
-// Func<TInput, ValueTask<TOutput>> — async (I/O, LLM calls)
-Func<string, ValueTask<string>> rewrite = async text =>
-    (await myAgent.RunAsync(text)).ToString();
-var rewriteExec = rewrite.BindAsExecutor("Rewriter");
-
-// Composing: TOutput of node A must match TInput of node B
-WorkflowBuilder builder = new(upperExec);
-builder.AddEdge(upperExec, rewriteExec);  // string → string ✓
-builder.WithOutputFrom(rewriteExec);
-```
-
-<div class="key">
-
-**`TInput`/`TOutput`** define the executor contract — sync `Func<T,R>` is auto-wrapped to `ValueTask` by the framework
-
-</div>
-
----
-
 
 ![bg fit](./img/bg-alt3.png)
 
@@ -283,20 +252,21 @@ builder.WithOutputFrom(rewriteExec);
 
 ```ts
 // Function executor — mask emails with regex
-Func<string, string> maskEmails = text =>
-    Regex.Replace(text, @"[\w.-]+@[\w.-]+\.\w+", "[EMAIL_REDACTED]");
 var maskExecutor = maskEmails.BindAsExecutor("MaskEmails");
 
-// Agent executor — LLM rewrites text, keeps redactions intact
-Func<string, ValueTask<string>> rewriteFunc = async text =>
-    (await rewriter.RunAsync(text)).ToString();
-var rewriteExecutor = rewriteFunc.BindAsExecutor("Rewriter");
+// Adapter — bridge string → ChatMessage + TurnToken for agent
+var toAgentExecutor = new FunctionExecutor<string>("ToAgent", async (text, ctx, ct) => {
+    await ctx.SendMessageAsync(new ChatMessage(ChatRole.User, text), ct);
+    await ctx.SendMessageAsync(new TurnToken(emitEvents: true), ct);
+}, sentMessageTypes: [typeof(ChatMessage), typeof(TurnToken)]).BindExecutor();
 
-// Function executor — validate no emails leaked through LLM
-Func<string, string> validate = text =>
-    Regex.IsMatch(text, @"[\w.-]+@[\w.-]+\.\w+")
-        ? "VALIDATION FAILED" : $"CLEAN\n\n{text}";
-var validateExecutor = validate.BindAsExecutor("ValidateNoLeaks");
+// Agent executor — bind directly, disable forwarding incoming messages
+var rewriteExecutor = rewriter.BindAsExecutor(
+    new AIAgentHostOptions { ForwardIncomingMessages = false });
+
+// Adapter — extract string from agent's ChatMessage output
+Func<List<ChatMessage>, string> fromAgent = msgs => string.Join("", msgs.Select(m => m.Text));
+var fromAgentExecutor = fromAgent.BindAsExecutor("FromAgent");
 ```
 
 ---
@@ -306,19 +276,21 @@ var validateExecutor = validate.BindAsExecutor("ValidateNoLeaks");
 # Composed Workflow — Graph
 
 ```ts
-// Build graph: mask → rewrite → validate
+// Build graph: mask → toAgent → rewrite → fromAgent → validate
 WorkflowBuilder builder = new(maskExecutor);
-builder.AddEdge(maskExecutor, rewriteExecutor);
-builder.AddEdge(rewriteExecutor, validateExecutor);
-builder.WithOutputFrom(validateExecutor);
+builder.AddEdge(maskExecutor, toAgentExecutor);
+builder.AddEdge(toAgentExecutor, rewriteExecutor);
+builder.AddEdge(rewriteExecutor, fromAgentExecutor);
+builder.WithOutputFrom(fromAgentExecutor);
 var workflow = builder.Build();
 ```
 
 | Step | Executor | Type | Output |
 |------|----------|------|--------|
 | 1 | MaskEmails | `Func` | `"contact [EMAIL_REDACTED] for..."` |
-| 2 | Rewriter | `AIAgent` | Naturally rewritten text |
-| 3 | ValidateNoLeaks | `Func` | `"CLEAN — no emails detected"` |
+| 2 | ToAgent | Adapter | string → ChatMessage + TurnToken |
+| 3 | Rewriter | `AIAgent` | Naturally rewritten text |
+| 4 | FromAgent | Adapter | List\<ChatMessage\> → string |
 
 ---
 
@@ -327,22 +299,21 @@ var workflow = builder.Build();
 # Composed Workflow — Execution
 
 ```ts
-await using Run run = await InProcessExecution.RunAsync(workflow, input);
+await using StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, input);
 
-foreach (WorkflowEvent evt in run.NewEvents)
+await foreach (WorkflowEvent evt in run.WatchStreamAsync())
 {
-    if (evt is ExecutorCompletedEvent executorComplete)
-    {
-        Console.WriteLine(
-            $"[{executorComplete.ExecutorId}]: {executorComplete.Data}");
-    }
+    if (evt is AgentResponseUpdateEvent e)
+        Console.Write(e.Update.Text);         // stream agent tokens
+    else if (evt is ExecutorCompletedEvent c)
+        Console.WriteLine($"[{c.ExecutorId}]: {c.Data}");
 }
 ```
 
 ```
 [MaskEmails]: "Hi team, contact Alice at [EMAIL_REDACTED] for the Q3 report..."
 [Rewriter]: "Hi team, please reach out to Alice at [EMAIL_REDACTED] for..."
-[ValidateNoLeaks]: "CLEAN - no emails detected"
+[FromAgent]: "Hi team, please reach out to Alice at [EMAIL_REDACTED] for..."
 ```
 
 ---
@@ -394,7 +365,7 @@ section {
 
 ![bg fit](./img/bg-alt3.png)
 
-# 06-agent-as-mcp.cs — Server Setup
+# Server Setup
 
 ```ts
 #:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
@@ -420,7 +391,7 @@ AIAgent weatherAgent = client.GetChatClient(deploymentName)
 
 ![bg fit](./img/bg-alt2.png)
 
-# 06-agent-as-mcp.cs — Exposing as MCP Tools
+# Exposing as MCP Tools
 
 ```ts
 // Wrap agents as MCP tools
@@ -529,7 +500,7 @@ AIAgent agent = client.GetChatClient(deploymentName)
 
 # Demo
 
-## `dotnet run src/06-agent-as-mcp.cs`
+## `claude --mcp-config ./.mcp_demo.json`
 ## `dotnet run src/06b-agent-as-mcp-client.cs`
 
 ---
@@ -815,7 +786,7 @@ await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(
 
 # Key Takeaways
 
-1. **`BindAsExecutor()`** — turn any `Func<T,R>` into a workflow node
+1. **`BindAsExecutor()`** — turn any `Func<T,R>` or `AIAgent` into a workflow node
 
 2. **`AgentWorkflowBuilder.BuildSequential()`** — chain agents into pipelines with one call
 

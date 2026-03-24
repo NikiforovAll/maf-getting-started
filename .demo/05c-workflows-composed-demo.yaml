@@ -1,6 +1,6 @@
 title: 05c Workflows Composed Demo
 description: Walk through the hybrid function-plus-agent workflow sample in the workflows deck.
-version: 3
+version: 4
 demos:
   - title: Intro
     description: Frame composed workflows as the place where deterministic steps and agents meet.
@@ -30,40 +30,54 @@ demos:
         path: src/05c-workflows-composed.cs
         position: '18:21'
         zoom: 2
-  - title: Rewriter Executor
-    description: Walk through the agent-backed executor that rewrites text while preserving redactions.
+  - title: ToAgent Adapter
+    description: Bridge from function output (string) to agent input (ChatMessage + TurnToken). Note sentMessageTypes declaration.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
-        position: '23:38'
+        position: '23:32'
+        zoom: 2
+  - title: Rewriter Agent Executor
+    description: Walk through the agent definition and BindAsExecutor with ForwardIncomingMessages disabled.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '34:47'
+        zoom: 2
+  - title: FromAgent Adapter
+    description: Extract plain string from agent ChatMessage output for downstream function executors.
+    steps:
+      - action: highlight
+        path: src/05c-workflows-composed.cs
+        position: '49:52'
         zoom: 2
   - title: Validation Executor
     description: Validate that the rewrite did not leak any email addresses.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
-        position: '40:48'
+        position: '54:62'
         zoom: 2
   - title: Workflow Graph
-    description: Build the mask to rewrite to validate graph explicitly with AddEdge calls.
+    description: Build the five-node graph with adapter executors bridging functions and agents.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
-        position: '50:55'
+        position: '64:71'
         zoom: 2
   - title: Sample Input
     description: Show the PII-laden input that the pipeline will sanitize and rewrite.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
-        position: '57:64'
+        position: '73:80'
         zoom: 2
-  - title: Execution Output
-    description: Run the composed workflow and print the output from each completed executor.
+  - title: Streaming Execution
+    description: Run the composed workflow with streaming to see agent tokens in real time.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
-        position: '66:76'
+        position: '82:110'
         zoom: 2
   - title: Wrap Up
     description: Close on mixed deterministic and intelligent steps before moving into MCP.

@@ -123,21 +123,6 @@ Built on **Microsoft.Extensions.AI**. It makes MAF provider-agnostic and extensi
 
 ---
 
-![bg fit](./img/bg-alt2.png)
-
-# Setup
-
-```bash
-# Environment
-export AZURE_OPENAI_ENDPOINT="https://your-resource.cognitiveservices.azure.com/"
-export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o-mini"
-
-# Run any sample directly — no .csproj needed
-dotnet run src/01-hello-agent.cs
-```
-
----
-
 ![bg fit](./img/bg-section.png)
 
 # Your&nbsp;**First Agent**
@@ -556,16 +541,13 @@ AgentSession session = await agent.CreateSessionAsync();
 
 ```ts
 // Turn 1 — introduce context
-Console.WriteLine(await agent.RunAsync(
-    "My name is Alice and I love hiking.", session));
+Console.WriteLine(await agent.RunAsync("My name is Alice and I love hiking.", session));
 
 // Turn 2 — agent remembers from session history
-Console.WriteLine(await agent.RunAsync(
-    "What do you remember about me?", session));
+Console.WriteLine(await agent.RunAsync("What do you remember about me?", session));
 
 // Turn 3 — agent uses accumulated context
-Console.WriteLine(await agent.RunAsync(
-    "Suggest a hiking destination for me.", session));
+Console.WriteLine(await agent.RunAsync("Suggest a hiking destination for me.", session));
 ```
 
 <br/>
@@ -810,7 +792,7 @@ public class FileChatHistoryProvider : ChatHistoryProvider
     public FileChatHistoryProvider(string directory, string? existingSessionId = null)
     {
         _sessionState = new ProviderSessionState<SessionState>(_ => new SessionState(
-            existingSessionId ?? Guid.NewGuid().ToString("N")[..8]),nameof(FileChatHistoryProvider));
+            existingSessionId, nameof(FileChatHistoryProvider)));
     }
 
     protected override ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(
@@ -881,8 +863,6 @@ await agent2.RunAsync("Do you remember my name?", session2); // → "Alice"
 3. **`.AsAIFunction()`** — any agent can become a tool for another agent
 
 4. **`AgentSession`** — pass to `RunAsync` to maintain multi-turn conversation history
-
-5. **`SerializeSessionAsync`** — portable session state, store anywhere, restore anytime
 
 ---
 
