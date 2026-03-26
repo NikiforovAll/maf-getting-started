@@ -39,11 +39,12 @@ dotnet run src/01-hello-agent.cs
 | 08a | `08a-agent-as-agui.cs`        | AG-UI server — expose agent via HTTP+SSE     |
 | 08b | `08b-agent-as-agui-client.cs` | AG-UI client — streaming console chat        |
 | 09  | `09-foundry-basics.cs`        | First Foundry agent — create, version, run   |
+| 09b | `09b-foundry-persistent-session.cs` | Persistent sessions — server-side conversations |
 | 10  | `10-foundry-tools.cs`         | Function tools on Foundry                    |
 | 11a | `11a-foundry-code-interpreter.cs` | Code Interpreter — Python sandbox        |
 | 11b | `11b-foundry-web-search.cs`   | Web Search — real-time queries + citations   |
 | 12  | `12-foundry-rag.cs`           | RAG — file upload, vector store, file search |
-| 13  | `13-foundry-memory.cs`        | Memory — cross-session recall via Foundry    |
+| 13  | `13-foundry-workflow.cs`      | Workflows — declarative multi-agent orchestration |
 | 14  | `14-foundry-evaluations.cs`   | Evaluations — quality, safety, self-reflection |
 
 ### Client/server samples
