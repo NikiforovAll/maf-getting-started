@@ -7,7 +7,7 @@ layout: default
 
 - Agent Skills are portable packages with `SKILL.md` frontmatter + instructions
 - Progressive disclosure: advertise → load → read resources
-- `FileAgentSkillsProvider` discovers skills from filesystem directories
+- `AgentSkillsProvider` discovers skills from filesystem directories
 - Skills are wired via `AIContextProviders` on `ChatClientAgentOptions`
 
 ---

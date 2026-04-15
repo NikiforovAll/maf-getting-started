@@ -1,7 +1,7 @@
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
-#:package Microsoft.Extensions.AI@10.3.0
+#:package Azure.Identity@1.20.0
+#:package Microsoft.Extensions.AI@10.4.0
 #:package ModelContextProtocol@1.0.0
 #:package Microsoft.Extensions.Logging.Console@10.0.0
 

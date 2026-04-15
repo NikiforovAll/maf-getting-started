@@ -1,6 +1,6 @@
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
-#:package Azure.AI.Projects@2.0.0-beta.1
-#:package Azure.Identity@1.18.0
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc5
+#:package Azure.AI.Projects@2.0.0-beta.2
+#:package Azure.Identity@1.20.0
 #:package Spectre.Console@0.50.0
 #:package OpenTelemetry@1.12.0
 #:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.12.0
@@ -32,7 +32,6 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
         {
             o.Endpoint = new Uri(otlpEndpoint);
         }
-
     })
     .Build();
 
@@ -48,12 +47,13 @@ AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredent
 
 // Create a server-side agent — managed by Foundry with name + version semantics
 Console.WriteLine("--- Creating Foundry Agent ---");
-ChatClientAgent chatAgent = await aiProjectClient.CreateAIAgentAsync(
+AIAgent agent = (
+    await aiProjectClient.CreateAIAgentAsync(
         name: AgentName,
         model: deploymentName,
         instructions: "You are a friendly assistant. Keep your answers brief."
-    );
-AIAgent agent = chatAgent
+    )
+)
     .AsBuilder()
     .UseOpenTelemetry(sourceName: SourceName)
     .Build();

@@ -1,4 +1,4 @@
-#:package Microsoft.Agents.AI.Workflows@1.0.0-rc4
+#:package Microsoft.Agents.AI.Workflows@1.1.0
 
 using Microsoft.Agents.AI.Workflows;
 

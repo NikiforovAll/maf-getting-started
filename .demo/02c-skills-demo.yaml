@@ -1,5 +1,5 @@
 title: 02c Agent Skills Demo
-description: Walk through the Agent Skills pattern with FileAgentSkillsProvider and progressive disclosure.
+description: Walk through the Agent Skills pattern with AgentSkillsProvider and progressive disclosure.
 version: 3
 demos:
   - title: Intro
@@ -23,7 +23,7 @@ demos:
         path: src/02c-skills.cs
         position: '18:29'
         zoom: 2
-  - title: FileAgentSkillsProvider
+  - title: AgentSkillsProvider
     description: Focus on the provider instantiation line.
     steps:
       - action: highlight

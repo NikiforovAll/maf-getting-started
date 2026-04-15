@@ -78,7 +78,7 @@ MAF unifies the best of both worlds:
 
 <div class="key">
 
-**MAF** = Microsoft Agent Framework — the production-ready successor (public preview, `1.0.0-rc4`)
+**MAF** = Microsoft Agent Framework — the production-ready successor (stable release, `1.1.0`)
 
 </div>
 
@@ -137,9 +137,9 @@ Built on **Microsoft.Extensions.AI**. It makes MAF provider-agnostic and extensi
 # 01-hello-agent.cs — Package Directives
 
 ```ts
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
+#:package Azure.Identity@1.20.0
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
@@ -475,7 +475,7 @@ metadata:
 # 02c-skills.cs — Wiring Skills
 
 ```ts
-var skillsProvider = new FileAgentSkillsProvider(skillPath: skillsDir);
+var skillsProvider = new AgentSkillsProvider(skillsDir);
 
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
     .GetChatClient(deploymentName)

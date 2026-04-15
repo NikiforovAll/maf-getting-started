@@ -1,8 +1,8 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
-#:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.0.0-preview.260311.1
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
+#:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.1.0-preview.260410.1
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
+#:package Azure.Identity@1.20.0
 
 using System.ComponentModel;
 using Azure.AI.OpenAI;

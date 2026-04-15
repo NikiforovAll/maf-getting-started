@@ -1,14 +1,16 @@
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
-#:package Azure.AI.Projects@2.0.0-beta.1
-#:package Azure.Identity@1.18.0
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc5
+#:package Azure.AI.Projects@2.0.0-beta.2
+#:package Azure.Identity@1.20.0
 #:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
+#:property NoWarn=OPENAI001
 
 using System.ClientModel;
 using System.Text.Json;
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.AzureAI;
 using Microsoft.Extensions.AI;
 using Spectre.Console;
 
@@ -87,15 +89,12 @@ AnsiConsole.MarkupLine($"[green]Workflow registered:[/] {WorkflowName}:{workflow
 // Step 3: Run the workflow with streaming
 AnsiConsole.Write(new Rule("[bold yellow]Running Workflow[/]").LeftJustified());
 
-ChatClientAgent workflowAgent = await aiProjectClient.GetAIAgentAsync(name: WorkflowName);
-AgentSession session = await workflowAgent.CreateSessionAsync();
-
-var conversationsClient = aiProjectClient.GetProjectOpenAIClient().GetProjectConversationsClient();
-var conversation = await conversationsClient.CreateProjectConversationAsync();
-AnsiConsole.MarkupLine($"[dim]Conversation ID:[/] {conversation.Value.Id}");
+FoundryAgent workflowAgent = (FoundryAgent)
+    await aiProjectClient.GetAIAgentAsync(name: WorkflowName);
+AgentSession session = await workflowAgent.CreateConversationSessionAsync();
 
 ChatClientAgentRunOptions runOptions = new(
-    new ChatOptions { ConversationId = conversation.Value.Id }
+    new ChatOptions { ConversationId = ((ChatClientAgentSession)session).ConversationId }
 );
 
 string prompt = "Write a story about a robot who discovers music for the first time.";
@@ -127,7 +126,6 @@ if (AnsiConsole.Confirm("Delete agents and workflow?"))
     await aiProjectClient.Agents.DeleteAgentAsync(StorytellerAgentName);
     await aiProjectClient.Agents.DeleteAgentAsync(CriticAgentName);
     await aiProjectClient.Agents.DeleteAgentAsync(WorkflowName);
-    await conversationsClient.DeleteConversationAsync(conversation.Value.Id);
     AnsiConsole.MarkupLine("[green]All resources deleted.[/]");
 }
 else

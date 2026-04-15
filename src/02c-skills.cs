@@ -1,7 +1,7 @@
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
-#:package Microsoft.Extensions.AI@10.3.0
+#:package Azure.Identity@1.20.0
+#:package Microsoft.Extensions.AI@10.4.0
 #:property NoWarn=MAAI001
 
 using Azure.AI.OpenAI;
@@ -28,7 +28,7 @@ if (!Directory.Exists(skillsDir))
     skillsDir = Path.Combine(Directory.GetCurrentDirectory(), "src", "skills");
 }
 
-var skillsProvider = new FileAgentSkillsProvider(skillPath: skillsDir);
+var skillsProvider = new AgentSkillsProvider(skillsDir);
 
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
     .GetChatClient(deploymentName)

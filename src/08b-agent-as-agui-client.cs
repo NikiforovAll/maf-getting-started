@@ -1,5 +1,5 @@
-#:package Microsoft.Agents.AI@1.0.0-rc4
-#:package Microsoft.Agents.AI.AGUI@1.0.0-preview.260311.1
+#:package Microsoft.Agents.AI@1.1.0
+#:package Microsoft.Agents.AI.AGUI@1.1.0-preview.260410.1
 #:package Spectre.Console@0.49.1
 
 using Microsoft.Agents.AI;

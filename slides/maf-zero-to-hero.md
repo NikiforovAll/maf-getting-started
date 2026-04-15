@@ -113,7 +113,7 @@ MAF unifies the best of both worlds:
 
 <div class="key">
 
-**MAF** = Microsoft Agent Framework — the production-ready successor (public preview, `1.0.0-rc4`)
+**MAF** = Microsoft Agent Framework — the production-ready successor (stable release, `1.1.0`)
 
 </div>
 
@@ -170,9 +170,9 @@ Built on **Microsoft.Extensions.AI**. It makes MAF provider-agnostic and extensi
 # Package Directives
 
 ```ts
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
+#:package Azure.Identity@1.20.0
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
@@ -508,7 +508,7 @@ metadata:
 # Wiring Skills
 
 ```ts
-var skillsProvider = new FileAgentSkillsProvider(skillPath: skillsDir);
+var skillsProvider = new AgentSkillsProvider(skillsDir);
 
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
     .GetChatClient(deploymentName)
@@ -1014,10 +1014,10 @@ section {
 # Server Setup
 
 ```ts
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 #:package Azure.AI.OpenAI@2.8.0-beta.1
-#:package Azure.Identity@1.18.0
-#:package Microsoft.Extensions.AI@10.3.0
+#:package Azure.Identity@1.20.0
+#:package Microsoft.Extensions.AI@10.4.0
 #:package Microsoft.Extensions.Hosting@10.0.0
 #:package ModelContextProtocol@1.0.0
 
@@ -1227,8 +1227,8 @@ section {
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
-#:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.0.0-preview.260225.1
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.Hosting.A2A.AspNetCore@1.1.0-preview.260410.1
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 
 AIAgent agent = client.GetChatClient(deploymentName)
     .AsIChatClient()
@@ -1248,7 +1248,7 @@ await app.RunAsync();
 # A2A Client
 
 ```ts
-#:package Microsoft.Agents.AI.A2A@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.A2A@1.1.0-preview.260410.1
 
 A2ACardResolver resolver = new(new Uri("http://localhost:5000"));
 
@@ -1353,8 +1353,8 @@ section {
 
 ```ts
 #:sdk Microsoft.NET.Sdk.Web
-#:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.0.0-preview.260225.1
-#:package Microsoft.Agents.AI.OpenAI@1.0.0-rc4
+#:package Microsoft.Agents.AI.Hosting.AGUI.AspNetCore@1.1.0-preview.260410.1
+#:package Microsoft.Agents.AI.OpenAI@1.1.0
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAGUI();              // register AG-UI JSON serialization
@@ -1392,7 +1392,7 @@ section {
 # AG-UI Client
 
 ```ts
-#:package Microsoft.Agents.AI.AGUI@1.0.0-preview.260225.1
+#:package Microsoft.Agents.AI.AGUI@1.1.0-preview.260410.1
 
 using HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
 AGUIChatClient chatClient = new(httpClient, "http://localhost:5000");
@@ -1477,8 +1477,8 @@ Same **`AIAgent`** / **`RunAsync()`** API surface — the abstraction doesn't ch
 
 **New package:**
 ```
-#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4
-#:package Azure.AI.Projects@1.2.0-beta.5
+#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc5
+#:package Azure.AI.Projects@2.0.0-beta.2
 ```
 
 **New entry point:**
