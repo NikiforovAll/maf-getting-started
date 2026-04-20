@@ -319,7 +319,7 @@ Print the **Trace ID** → find the same trace in Foundry Portal with token coun
 // AsAIAgent returns FoundryAgent; unwrap to the inner ChatClientAgent
 // to access the CreateSessionAsync(conversationId) overload.
 AIAgent foundryAgent = aiProjectClient.AsAIAgent(agentVersion);
-ChatClientAgent agent = (ChatClientAgent)foundryAgent.GetService(typeof(ChatClientAgent))!;
+ChatClientAgent agent = foundryAgent.GetService<ChatClientAgent>()!;
 
 // Create a server-side conversation — persisted in Foundry, visible in Portal
 ProjectConversationsClient conversationsClient = aiProjectClient
