@@ -14,29 +14,29 @@ demos:
         path: src/09b-foundry-persistent-session.cs
       - action: highlight
         path: src/09b-foundry-persistent-session.cs
-        position: '24:28'
-        zoom: 2
+        position: '26:39'
+        zoom: 1
   - title: Conversations Client
     description: ProjectConversationsClient creates server-side conversations visible in the Portal.
     steps:
       - action: highlight
         path: src/09b-foundry-persistent-session.cs
-        position: '33:37'
-        zoom: 2
+        position: '43:47'
+        zoom: 1
   - title: Session 1
     description: First session establishes context with two prompts.
     steps:
       - action: highlight
         path: src/09b-foundry-persistent-session.cs
-        position: '41:49'
-        zoom: 2
+        position: '50:59'
+        zoom: 1
   - title: Session 2 Resume
     description: New session with the same conversation ID — the agent remembers everything.
     steps:
       - action: highlight
         path: src/09b-foundry-persistent-session.cs
-        position: '52:57'
-        zoom: 2
+        position: '62:70'
+        zoom: 1
   - title: Wrap Up
     description: Recap persistent sessions before moving to function tools.
     steps:

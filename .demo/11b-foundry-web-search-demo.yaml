@@ -14,29 +14,29 @@ demos:
         path: src/11b-foundry-web-search.cs
       - action: highlight
         path: src/11b-foundry-web-search.cs
-        position: '27:32'
-        zoom: 2
+        position: '28:39'
+        zoom: 1
   - title: Run
     description: Ask a real-time question the model can't answer from training data.
     steps:
       - action: highlight
         path: src/11b-foundry-web-search.cs
-        position: '36:36'
-        zoom: 2
+        position: '43:43'
+        zoom: 1
   - title: Citation Extraction
     description: LINQ pipeline extracts UriCitationMessageAnnotation from response.
     steps:
       - action: highlight
         path: src/11b-foundry-web-search.cs
-        position: '46:51'
-        zoom: 2
+        position: '53:58'
+        zoom: 1
   - title: Display Citations
     description: Render citations as a Spectre table with title and URL.
     steps:
       - action: highlight
         path: src/11b-foundry-web-search.cs
-        position: '55:72'
-        zoom: 2
+        position: '62:79'
+        zoom: 1
   - title: Wrap Up
     description: Recap web search before moving to RAG.
     steps:

@@ -15,63 +15,63 @@ demos:
       - action: highlight
         path: src/02-tools.cs
         position: '1:4'
-        zoom: 2
+        zoom: 1
   - title: Using Directives
     description: Show the namespaces for descriptions, Azure OpenAI, and the MAF abstractions.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '6:11'
-        zoom: 2
+        zoom: 1
   - title: Inputs And Client
     description: Capture the environment variables and create the shared Azure OpenAI client.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '13:16'
-        zoom: 2
+        zoom: 1
   - title: Function Tool Agent
     description: Show the full weather agent construction before zooming into the tool registration.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '22:29'
-        zoom: 2
+        zoom: 1
   - title: Tool Registration
     description: Focus on the single line that turns the C# method into a callable tool.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '28:28'
-        zoom: 2
+        zoom: 1
   - title: Tool Definition
     description: End on the method and Description attributes that become the tool schema.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '48:50'
-        zoom: 2
+        zoom: 1
   - title: Function Tool Run
     description: Show the direct weather-agent call that demonstrates the registered tool in action.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '31:31'
-        zoom: 2
+        zoom: 1
   - title: Agent As Tool
     description: Compose a second agent that can delegate weather questions to the first agent.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '33:42'
-        zoom: 2
+        zoom: 1
   - title: Orchestrator Run
     description: Demonstrate the delegated run where the orchestrator can answer for multiple locations.
     steps:
       - action: highlight
         path: src/02-tools.cs
         position: '44:44'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close with the tools takeaways before moving to sessions.
     steps:

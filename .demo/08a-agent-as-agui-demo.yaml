@@ -15,28 +15,28 @@ demos:
       - action: highlight
         path: src/08a-agent-as-agui.cs
         position: '1:18'
-        zoom: 2
+        zoom: 1
   - title: Server Setup
     description: Show the web app setup, CORS policy, and AG-UI registration.
     steps:
       - action: highlight
         path: src/08a-agent-as-agui.cs
         position: '20:28'
-        zoom: 2
+        zoom: 1
   - title: AGUI Agent
     description: Create the agent that will be exposed as an AG-UI endpoint.
     steps:
       - action: highlight
         path: src/08a-agent-as-agui.cs
         position: '30:38'
-        zoom: 2
+        zoom: 1
   - title: AGUI Endpoint
     description: Focus on the MapAGUI endpoint and the app run call.
     steps:
       - action: highlight
         path: src/08a-agent-as-agui.cs
         position: '40:42'
-        zoom: 2
+        zoom: 1
   - title: Client Packages
     description: Switch to the AG-UI client sample and show the packages and console UI imports.
     steps:
@@ -45,28 +45,28 @@ demos:
       - action: highlight
         path: src/08b-agent-as-agui-client.cs
         position: '1:8'
-        zoom: 2
+        zoom: 1
   - title: Client Setup
     description: Configure the host, AGUIChatClient, and session used for the chat loop.
     steps:
       - action: highlight
         path: src/08b-agent-as-agui-client.cs
         position: '10:20'
-        zoom: 2
+        zoom: 1
   - title: Prompt Loop
     description: Show the interactive prompt loop that collects user messages.
     steps:
       - action: highlight
         path: src/08b-agent-as-agui-client.cs
         position: '22:30'
-        zoom: 2
+        zoom: 1
   - title: Streaming Render
     description: Stream text updates from the remote AG-UI agent and persist the assistant response.
     steps:
       - action: highlight
         path: src/08b-agent-as-agui-client.cs
         position: '33:49'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close on AG-UI as the user-facing endpoint for rich chat experiences.
     steps:

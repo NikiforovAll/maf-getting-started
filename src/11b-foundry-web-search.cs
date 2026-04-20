@@ -7,6 +7,7 @@
 #:property NoWarn=OPENAI001
 
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -24,12 +25,18 @@ const string AgentName = "WebSearchAgent";
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
 // HostedWebSearchTool — Responses API web search
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: AgentName,
-    model: deploymentName,
-    instructions: "You are a helpful assistant that searches the web to answer questions accurately. Always cite your sources.",
-    tools: [new HostedWebSearchTool()]
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a helpful assistant that searches the web to answer questions accurately. Always cite your sources.",
+            Tools = { ResponseTool.CreateWebSearchTool() },
+        }
+    )
 );
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 AnsiConsole.Write(new Rule("[bold blue]Web Search[/]").LeftJustified());
 

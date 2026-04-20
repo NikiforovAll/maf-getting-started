@@ -14,29 +14,29 @@ demos:
         path: src/13-foundry-workflow.cs
       - action: highlight
         path: src/13-foundry-workflow.cs
-        position: '30:42'
-        zoom: 2
+        position: '33:55'
+        zoom: 1
   - title: Workflow YAML
     description: Declarative definition with OnConversationStart trigger and InvokeAzureAgent steps.
     steps:
       - action: highlight
         path: src/13-foundry-workflow.cs
-        position: '47:63'
-        zoom: 2
+        position: '60:76'
+        zoom: 1
   - title: Register Workflow
     description: CreateAgentVersionAsync registers the workflow as a server-side agent version.
     steps:
       - action: highlight
         path: src/13-foundry-workflow.cs
-        position: '76:85'
-        zoom: 2
+        position: '89:94'
+        zoom: 1
   - title: Run With Streaming
     description: RunStreamingAsync streams results from each agent in the workflow.
     steps:
       - action: highlight
         path: src/13-foundry-workflow.cs
-        position: '90:120'
-        zoom: 2
+        position: '103:131'
+        zoom: 1
   - title: Wrap Up
     description: Recap workflows before moving to evaluations.
     steps:

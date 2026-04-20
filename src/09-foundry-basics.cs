@@ -9,6 +9,7 @@
 
 using System.Diagnostics;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using OpenTelemetry;
@@ -47,13 +48,17 @@ AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredent
 
 // Create a server-side agent — managed by Foundry with name + version semantics
 Console.WriteLine("--- Creating Foundry Agent ---");
-AIAgent agent = (
-    await aiProjectClient.CreateAIAgentAsync(
-        name: AgentName,
-        model: deploymentName,
-        instructions: "You are a friendly assistant. Keep your answers brief."
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a friendly assistant. Keep your answers brief.",
+        }
     )
-)
+);
+AIAgent agent = aiProjectClient
+    .AsAIAgent(agentVersion)
     .AsBuilder()
     .UseOpenTelemetry(sourceName: SourceName)
     .Build();

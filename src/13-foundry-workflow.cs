@@ -8,6 +8,7 @@
 using System.ClientModel;
 using System.Text.Json;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.AzureAI;
@@ -29,17 +30,27 @@ AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredent
 // Step 1: Create the two Foundry agents
 AnsiConsole.Write(new Rule("[bold yellow]Creating Agents[/]").LeftJustified());
 
-await aiProjectClient.CreateAIAgentAsync(
-    name: StorytellerAgentName,
-    model: deploymentName,
-    instructions: "You are a creative storyteller. Write a short story (3-5 sentences) based on the user's prompt. Be vivid and imaginative."
+await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: StorytellerAgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a creative storyteller. Write a short story (3-5 sentences) based on the user's prompt. Be vivid and imaginative.",
+        }
+    )
 );
 AnsiConsole.MarkupLine($"[green]Created:[/] {StorytellerAgentName}");
 
-await aiProjectClient.CreateAIAgentAsync(
-    name: CriticAgentName,
-    model: deploymentName,
-    instructions: "You are a literary critic. Review the story and provide brief constructive feedback (2-3 sentences). Highlight what works and suggest one improvement."
+await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: CriticAgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a literary critic. Review the story and provide brief constructive feedback (2-3 sentences). Highlight what works and suggest one improvement.",
+        }
+    )
 );
 AnsiConsole.MarkupLine($"[green]Created:[/] {CriticAgentName}");
 
@@ -89,8 +100,8 @@ AnsiConsole.MarkupLine($"[green]Workflow registered:[/] {WorkflowName}:{workflow
 // Step 3: Run the workflow with streaming
 AnsiConsole.Write(new Rule("[bold yellow]Running Workflow[/]").LeftJustified());
 
-FoundryAgent workflowAgent = (FoundryAgent)
-    await aiProjectClient.GetAIAgentAsync(name: WorkflowName);
+AgentRecord workflowRecord = await aiProjectClient.Agents.GetAgentAsync(WorkflowName);
+FoundryAgent workflowAgent = aiProjectClient.AsAIAgent(workflowRecord);
 AgentSession session = await workflowAgent.CreateConversationSessionAsync();
 
 ChatClientAgentRunOptions runOptions = new(

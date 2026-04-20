@@ -15,42 +15,42 @@ demos:
       - action: highlight
         path: src/09-foundry-basics.cs
         position: '1:8'
-        zoom: 2
+        zoom: 1
   - title: AIProjectClient
     description: The new Foundry entry point replacing AzureOpenAIClient.
     steps:
       - action: highlight
         path: src/09-foundry-basics.cs
         position: '47:47'
-        zoom: 2
+        zoom: 1
   - title: Create Agent With OpenTelemetry
-    description: CreateAIAgentAsync returns a server-managed agent, UseOpenTelemetry adds client tracing.
+    description: Agents.CreateAgentVersionAsync returns a server-managed agent version, AsAIAgent wraps it, UseOpenTelemetry adds client tracing.
     steps:
       - action: highlight
         path: src/09-foundry-basics.cs
-        position: '51:59'
-        zoom: 2
+        position: '51:64'
+        zoom: 1
   - title: Trace Correlation
     description: Parent activity links client spans with Foundry server traces via the same Trace ID.
     steps:
       - action: highlight
         path: src/09-foundry-basics.cs
-        position: '65:66'
-        zoom: 2
+        position: '70:71'
+        zoom: 1
   - title: Non-Streaming Execution
     description: RunAsync returns the full response.
     steps:
       - action: highlight
         path: src/09-foundry-basics.cs
-        position: '69:70'
-        zoom: 2
+        position: '74:75'
+        zoom: 1
   - title: Streaming Execution
     description: RunStreamingAsync yields updates as they arrive.
     steps:
       - action: highlight
         path: src/09-foundry-basics.cs
-        position: '73:78'
-        zoom: 2
+        position: '78:83'
+        zoom: 1
   - title: Wrap Up
     description: Recap Foundry basics before moving to persistent sessions.
     steps:

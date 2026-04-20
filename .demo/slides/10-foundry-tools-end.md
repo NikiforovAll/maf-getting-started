@@ -7,7 +7,7 @@ layout: default
 
 - `AIFunctionFactory.Create` works the same on Foundry
 - Server stores **tool schemas**, client provides **implementations**
-- `GetAIAgentAsync` requires `tools` parameter for automatic invocation
+- `Agents.GetAgentAsync` + `AsAIAgent(record, tools: ...)` for retrieval with automatic invocation
 
 ---
 layout: section

@@ -15,56 +15,56 @@ demos:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '1:6'
-        zoom: 2
+        zoom: 1
   - title: Using Directives
     description: Highlight the hosting and DI namespaces alongside the MAF ones.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '8:15'
-        zoom: 2
+        zoom: 1
   - title: Host Builder And ChatClient
     description: Create the host builder and register IChatClient as a singleton.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '23:28'
-        zoom: 2
+        zoom: 1
   - title: Register Tool Dependencies
     description: Register the WeatherService class in the container.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '30:31'
-        zoom: 2
+        zoom: 1
   - title: AddAIAgent With DI Tool
     description: Register the agent and wire a tool resolved from the container.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '33:41'
-        zoom: 2
+        zoom: 1
   - title: WithAITool Factory
     description: Focus on the factory lambda that resolves the tool from DI.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '41:41'
-        zoom: 2
+        zoom: 1
   - title: Resolve And Run
     description: Build the host, resolve the agent as a keyed service, and run it.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '43:49'
-        zoom: 2
+        zoom: 1
   - title: WeatherService Class
     description: Show the class-based tool with Description attributes and AsAITool method.
     steps:
       - action: highlight
         path: src/02b-tools-di.cs
         position: '53:60'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close with DI hosting takeaways.
     steps:

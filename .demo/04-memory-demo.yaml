@@ -15,63 +15,63 @@ demos:
       - action: highlight
         path: src/04-memory.cs
         position: '1:3'
-        zoom: 2
+        zoom: 1
   - title: Using Directives
     description: Show the namespaces needed for the default in-memory experience.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '5:8'
-        zoom: 2
+        zoom: 1
   - title: In-Memory Agent Setup
     description: Create the agent and session that use the default in-memory chat history provider.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '13:21'
-        zoom: 2
+        zoom: 1
   - title: First Prompt
     description: Start the conversation with a simple question inside the session.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '23:28'
-        zoom: 2
+        zoom: 1
   - title: User Fact
     description: Add a personal detail that the agent should remember later.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '30:31'
-        zoom: 2
+        zoom: 1
   - title: Memory Recall
     description: Show the session-backed recall question that proves history is preserved in memory.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '33:35'
-        zoom: 2
+        zoom: 1
   - title: Session Serialization
     description: Serialize the session to a JSON payload that can be stored anywhere.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '37:40'
-        zoom: 2
+        zoom: 1
   - title: Session Restoration
     description: Rehydrate the session from the serialized data.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '42:44'
-        zoom: 2
+        zoom: 1
   - title: Restored Session Run
     description: Continue the conversation after restoration to prove the memory survived.
     steps:
       - action: highlight
         path: src/04-memory.cs
         position: '46:49'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close on serialization as the bridge from in-memory to persistent history.
     steps:

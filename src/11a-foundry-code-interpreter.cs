@@ -10,10 +10,12 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI.Assistants;
+using OpenAI.Responses;
 using Spectre.Console;
 
 var endpoint =
@@ -27,12 +29,27 @@ const string AgentName = "CodeInterpreterAgent";
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
 // HostedCodeInterpreterTool — Python sandbox execution on the server
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    model: deploymentName,
-    name: AgentName,
-    instructions: "You are a math tutor. Write and run Python code to solve problems. Do not generate plots or charts. IMPORTANT: Always use print() to display results, never use bare expressions. Use plain text formatting, never use LaTeX or markdown.",
-    tools: [new HostedCodeInterpreterTool() { Inputs = [] }]
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a math tutor. Write and run Python code to solve problems. Do not generate plots or charts. IMPORTANT: Always use print() to display results, never use bare expressions. Use plain text formatting, never use LaTeX or markdown.",
+            Tools =
+            {
+                ResponseTool.CreateCodeInterpreterTool(
+                    new CodeInterpreterToolContainer(
+                        CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(
+                            fileIds: []
+                        )
+                    )
+                ),
+            },
+        }
+    )
 );
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 AnsiConsole.Write(new Rule("[bold blue]Code Interpreter[/]").LeftJustified());
 

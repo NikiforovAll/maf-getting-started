@@ -14,43 +14,43 @@ demos:
         path: src/11a-foundry-code-interpreter.cs
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '30:35'
-        zoom: 2
+        position: '32:52'
+        zoom: 1
   - title: Run
     description: Ask the agent to solve a math problem with Python.
     steps:
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '39:41'
-        zoom: 2
+        position: '56:58'
+        zoom: 1
   - title: Response Parsing
     description: Walk the response contents to see the full execution flow.
     steps:
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '44:46'
-        zoom: 2
+        position: '61:63'
+        zoom: 1
   - title: TextContent
     description: Text before and after the tool call — thinking vs final answer.
     steps:
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '49:57'
-        zoom: 2
+        position: '66:74'
+        zoom: 1
   - title: Code Tool Call
     description: CodeInterpreterToolCallContent contains the Python code the agent wrote.
     steps:
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '60:72'
-        zoom: 2
+        position: '77:89'
+        zoom: 1
   - title: Code Tool Result
     description: CodeInterpreterToolResultContent returns the execution output.
     steps:
       - action: highlight
         path: src/11a-foundry-code-interpreter.cs
-        position: '75:88'
-        zoom: 2
+        position: '92:105'
+        zoom: 1
   - title: Wrap Up
     description: Recap Code Interpreter before moving to web search.
     steps:

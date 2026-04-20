@@ -50,6 +50,17 @@ footer: ""
 
 ---
 
+<!-- _class: chapter -->
+
+![bg fit](./img/bg-section.png)
+
+# Demo
+
+## A quick tour of Azure AI Foundry
+
+---
+
+
 ![bg fit](./img/bg-section.png)
 
 # **Why Foundry?**
@@ -68,11 +79,11 @@ th,td {font-size: 20px;}
 
 | | MAF | Azure AI Foundry |
 |--|--|--|
-| **Agent lifecycle** | In-process only | Server-side (named + versioned) |
-| **Tools** | Client-side `AIFunction` | Client-side + **hosted** (Code, Search, Web) |
+| **Schema Versioning** | - | Definition stored Azure-side (named + versioned) |
+| **Tools** | Server-side `AIFunction` | Server-side + **hosted** (Code, Search, Web) |
 | **Memory** | `InMemoryChatHistoryProvider` | Managed **Memory Stores** |
-| **RAG** | Build your own | Hosted **vector stores** + `HostedFileSearchTool` |
-| **Evaluation** | N/A | Built-in **quality + safety** evaluators |
+| **RAG** | Build your own | Hosted **vector stores** + file search tool |
+| **Evaluation** | Build your own | Built-in **quality + safety** evaluators |
 
 <br/>
 
@@ -128,10 +139,14 @@ export AZURE_AI_PROJECT_ENDPOINT="https://your-project.services.ai.azure.com/api
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
 // Create a server-side agent — Foundry manages it with name + version
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: "FoundryBasicsAgent",
-    model: deploymentName,
-    instructions: "You are a friendly assistant. Keep your answers brief.");
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "FoundryBasicsAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a friendly assistant. Keep your answers brief.",
+        }));
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 ```
 
 <div class="key">
@@ -148,7 +163,8 @@ Agents are **server-side resources** — named, versioned, persisted in Foundry
 
 ```ts
 // Retrieve latest version by name
-AIAgent retrieved = await aiProjectClient.GetAIAgentAsync(name: "FoundryBasicsAgent");
+AgentRecord record = await aiProjectClient.Agents.GetAgentAsync("FoundryBasicsAgent");
+AIAgent retrieved = aiProjectClient.AsAIAgent(record);
 
 // Non-streaming — same as Azure OpenAI agents
 Console.WriteLine(await agent.RunAsync("Tell me a fun fact about Azure."));
@@ -170,17 +186,20 @@ await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
 # Agent Versioning
 
 ```ts
-// Each CreateAIAgentAsync call creates a new version
-AIAgent v1 = await aiProjectClient.CreateAIAgentAsync(
-    name: "MyAgent", model: "gpt-4o-mini", 
-    instructions: "You are helpful.");
+// Each CreateAgentVersionAsync call creates a new version
+AgentVersion v1 = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "MyAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition("gpt-4o-mini") { Instructions = "You are helpful." }));
 
-AIAgent v2 = await aiProjectClient.CreateAIAgentAsync(
-    name: "MyAgent", model: "gpt-4o-mini",
-    instructions: "You are extremely helpful and concise.");
+AgentVersion v2 = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "MyAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition("gpt-4o-mini") { Instructions = "You are extremely helpful and concise." }));
 
-// GetAIAgentAsync returns the latest version
-AIAgent latest = await aiProjectClient.GetAIAgentAsync(name: "MyAgent");
+// GetAgentAsync returns the latest version as an AgentRecord
+AgentRecord latestRecord = await aiProjectClient.Agents.GetAgentAsync("MyAgent");
+AIAgent latest = aiProjectClient.AsAIAgent(latestRecord);
 ```
 
 <br/>
@@ -236,9 +255,12 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
     .Build();
 
 // 2. Wrap agent with telemetry
-AIAgent agent = (await aiProjectClient.CreateAIAgentAsync(
-    name: "FoundryBasicsAgent", model: deploymentName,
-    instructions: "You are a friendly assistant."))
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "FoundryBasicsAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName) { Instructions = "You are a friendly assistant." }));
+AIAgent agent = aiProjectClient
+    .AsAIAgent(agentVersion)
     .AsBuilder()
     .UseOpenTelemetry(sourceName: "FoundryBasicsDemo")
     .Build();
@@ -294,6 +316,11 @@ Print the **Trace ID** → find the same trace in Foundry Portal with token coun
 # Creating a Foundry Conversation
 
 ```ts
+// AsAIAgent returns FoundryAgent; unwrap to the inner ChatClientAgent
+// to access the CreateSessionAsync(conversationId) overload.
+AIAgent foundryAgent = aiProjectClient.AsAIAgent(agentVersion);
+ChatClientAgent agent = (ChatClientAgent)foundryAgent.GetService(typeof(ChatClientAgent))!;
+
 // Create a server-side conversation — persisted in Foundry, visible in Portal
 ProjectConversationsClient conversationsClient = aiProjectClient
     .GetProjectOpenAIClient()
@@ -303,7 +330,7 @@ ProjectConversation conversation = await conversationsClient.CreateProjectConver
 
 // Link session to the conversation — history stored server-side
 AgentSession session = await agent.CreateSessionAsync(conversation.Id);
-Console.WriteLine(await agent.RunAsync("My name is Alex.", session));
+Console.WriteLine(await agent.RunAsync("My name is Oleksii.", session));
 ```
 
 <br/>
@@ -364,13 +391,19 @@ Conversations **persist beyond sessions** — store the ID in your DB, resume fr
 static string GetWeather([Description("The location")] string location)
     => $"The weather in {location} is sunny with a high of 22°C.";
 
-AITool[] tools = [AIFunctionFactory.Create(GetWeather)];
+AIFunction getWeather = AIFunctionFactory.Create(GetWeather);
+AITool[] tools = [getWeather];
 
-// Server stores tool schemas, client provides invocable implementations
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: "WeatherAgent", model: deploymentName,
-    instructions: "You are a helpful assistant with weather tools.",
-    tools: tools);
+// Register schema server-side (declarative) + provide invocable impl client-side
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "WeatherAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a helpful assistant with weather tools.",
+            Tools = { getWeather.AsOpenAIResponseTool() },
+        }));
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion, tools: tools);
 ```
 
 ---
@@ -382,8 +415,9 @@ AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
 ```ts
 // IMPORTANT: Server only stores the tool schema (JSON Schema)
 // You must provide invocable tools when retrieving
-var existing = await aiProjectClient.GetAIAgentAsync(
-    name: "WeatherAgent",
+AgentRecord record = await aiProjectClient.Agents.GetAgentAsync("WeatherAgent");
+AIAgent existing = aiProjectClient.AsAIAgent(
+    record,
     tools: [AIFunctionFactory.Create(GetWeather)]);
 
 Console.WriteLine(await existing.RunAsync("What's the weather in Kyiv?"));
@@ -427,7 +461,7 @@ th,td {font-size: 20px;}
 |--|--|--|
 | **Execution** | Your process | Foundry cloud sandbox |
 | **Setup** | Define + implement | One-liner — Foundry provides runtime |
-| **Examples** | `AIFunctionFactory.Create(...)` | `HostedCodeInterpreterTool`, `HostedWebSearchTool`, `HostedFileSearchTool` |
+| **Examples** | `AIFunctionFactory.Create(...)` | `ResponseTool.CreateCodeInterpreterTool/CreateWebSearchTool/CreateFileSearchTool` |
 | **Use case** | Custom business logic | Python execution, web search, file search |
 
 <br/>
@@ -445,11 +479,17 @@ Hosted tools run **server-side** — no local dependencies, no infrastructure to
 # Code Interpreter — Python Sandbox
 
 ```ts
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    model: deploymentName,
-    name: "MathTutor",
-    instructions: "You are a math tutor. Write and run Python code to solve problems.",
-    tools: [new HostedCodeInterpreterTool() { Inputs = [] }]);
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "MathTutor",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a math tutor. Write and run Python code to solve problems.",
+            Tools = { ResponseTool.CreateCodeInterpreterTool(
+                new CodeInterpreterToolContainer(
+                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(fileIds: []))) },
+        }));
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 AgentResponse response = await agent.RunAsync(
     "Solve x^3 - 6x^2 + 11x - 6 = 0. Plot the function and mark the roots.");
@@ -459,7 +499,7 @@ AgentResponse response = await agent.RunAsync(
 
 <div class="tip">
 
-`HostedCodeInterpreterTool` — the agent writes Python, Foundry runs it in a sandbox, returns results + files
+`ResponseTool.CreateCodeInterpreterTool(...)` — the agent writes Python, Foundry runs it in a sandbox, returns results + files
 
 </div>
 
@@ -480,11 +520,15 @@ AgentResponse response = await agent.RunAsync(
 # Web Search — Real-Time Queries
 
 ```ts
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: "WebSearchAgent",
-    model: deploymentName,
-    instructions: "Search the web to answer questions accurately. Cite your sources.",
-    tools: [new HostedWebSearchTool()]);
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "WebSearchAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "Search the web to answer questions accurately. Cite your sources.",
+            Tools = { ResponseTool.CreateWebSearchTool() },
+        }));
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 AgentResponse response = await agent.RunAsync("What are the latest features in .NET 10?");
 ```
@@ -511,7 +555,7 @@ foreach (var annotation in response.Messages
 
 <div class="key">
 
-`HostedWebSearchTool` — agent searches the web autonomously and returns **annotated citations**
+`ResponseTool.CreateWebSearchTool()` — agent searches the web autonomously and returns **annotated citations**
 
 </div>
 
@@ -543,7 +587,7 @@ foreach (var annotation in response.Messages
 |------|-----|-------------|
 | 1. **Upload file** | `filesClient.UploadFile()` | File stored in Foundry |
 | 2. **Create vector store** | `vectorStoresClient.CreateVectorStoreAsync()` | Auto-chunked + embedded |
-| 3. **Create agent** | `CreateAIAgentAsync(tools: [HostedFileSearchTool])` | Agent grounded on your data |
+| 3. **Create agent** | `CreateAgentVersionAsync` + `ResponseTool.CreateFileSearchTool` | Agent grounded on your data |
 | 4. **Ask questions** | `agent.RunAsync()` | Grounded answers with citations |
 | 5. **Cleanup** | Delete agent, vector store, file | No orphan resources |
 
@@ -574,6 +618,13 @@ OpenAIFile uploaded = filesClient.UploadFile(tempFile, FileUploadPurpose.Assista
 // Create vector store — auto-chunks and embeds
 var vectorStore = await vectorStoresClient.CreateVectorStoreAsync(
     new() { FileIds = { uploaded.Id }, Name = "contoso-products" });
+
+// Wait for file ingestion to complete before querying
+while ((await vectorStoresClient.GetVectorStoreAsync(vectorStore.Value.Id)).Value.Status
+    != VectorStoreStatus.Completed)
+{
+    await Task.Delay(500);
+}
 ```
 
 ---
@@ -583,13 +634,15 @@ var vectorStore = await vectorStoresClient.CreateVectorStoreAsync(
 # Create Agent with File Search
 
 ```ts
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    model: deploymentName,
-    name: "RAGAgent",
-    instructions: "Answer questions using the product catalog. Cite the source.",
-    tools: [new HostedFileSearchTool() {
-        Inputs = [new HostedVectorStoreContent(vectorStoreId)]
-    }]);
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: "RAGAgent",
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "Answer questions using the product catalog. Cite the source.",
+            Tools = { ResponseTool.CreateFileSearchTool(vectorStoreIds: [vectorStoreId]) },
+        }));
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 // Multi-turn Q&A with grounded answers
 var session = await agent.CreateSessionAsync();
@@ -661,7 +714,8 @@ AgentVersion workflowVersion = await aiProjectClient.Agents
     .CreateAgentVersionAsync(WorkflowName, new(workflowDefinition));
 
 // Run with streaming — each agent produces a separate message
-ChatClientAgent workflowAgent = await aiProjectClient.GetAIAgentAsync(name: WorkflowName);
+AgentRecord workflowRecord = await aiProjectClient.Agents.GetAgentAsync(WorkflowName);
+ChatClientAgent workflowAgent = (ChatClientAgent)aiProjectClient.AsAIAgent(workflowRecord);
 
 ChatClientAgentRunOptions runOptions = new(
     new ChatOptions { ConversationId = conversation.Id });
@@ -766,13 +820,13 @@ EvaluationResult result = await evaluator.EvaluateAsync(
 
 # Key Takeaways
 
-1. **`AIProjectClient.CreateAIAgentAsync()`** — same `AIAgent` API, server-managed lifecycle
+1. **`AIProjectClient.Agents.CreateAgentVersionAsync()` + `AsAIAgent()`** — same `AIAgent` API, server-managed lifecycle with versioning
 
 2. **`.UseOpenTelemetry()` + Aspire** — client spans correlated with Foundry server traces
 
-3. **`HostedCodeInterpreterTool`** / **`HostedWebSearchTool`** — zero-infrastructure hosted tools
+3. **`ResponseTool.CreateCodeInterpreterTool()`** / **`CreateWebSearchTool()`** — zero-infrastructure hosted tools
 
-4. **File upload → vector store → `HostedFileSearchTool`** — RAG in ~10 lines
+4. **File upload → vector store → `ResponseTool.CreateFileSearchTool()`** — RAG in ~10 lines
 
 5. **`GroundednessEvaluator` + `ContentHarmEvaluator`** — evaluate quality and safety before production
 

@@ -15,35 +15,35 @@ demos:
       - action: highlight
         path: src/02c-skills.cs
         position: '1:5'
-        zoom: 2
+        zoom: 1
   - title: Skills Provider Setup
     description: Show how skills are discovered from a directory path.
     steps:
       - action: highlight
         path: src/02c-skills.cs
         position: '18:29'
-        zoom: 2
+        zoom: 1
   - title: AgentSkillsProvider
     description: Focus on the provider instantiation line.
     steps:
       - action: highlight
         path: src/02c-skills.cs
         position: '31:31'
-        zoom: 2
+        zoom: 1
   - title: Agent With Context Providers
     description: Wire the skills provider via AIContextProviders on ChatClientAgentOptions.
     steps:
       - action: highlight
         path: src/02c-skills.cs
         position: '33:43'
-        zoom: 2
+        zoom: 1
   - title: AIContextProviders
     description: Focus on the context providers array that enables skill discovery.
     steps:
       - action: highlight
         path: src/02c-skills.cs
         position: '41:41'
-        zoom: 2
+        zoom: 1
   - title: Skill Structure
     description: Show the SKILL.md file that defines the code-review skill.
     steps:
@@ -52,7 +52,7 @@ demos:
       - action: highlight
         path: src/skills/code-review/SKILL.md
         position: '1:7'
-        zoom: 2
+        zoom: 1
   - title: Skill Instructions
     description: Walk through the review checklist and process in the skill body.
     steps:
@@ -77,7 +77,7 @@ demos:
       - action: highlight
         path: src/02c-skills.cs
         position: '45:58'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close with agent skills takeaways.
     steps:

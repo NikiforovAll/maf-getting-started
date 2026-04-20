@@ -15,35 +15,35 @@ scenes:
       - action: highlight
         path: src/06-agent-as-mcp.cs
         position: '1:16'
-        zoom: 2
+        zoom: 1
   - title: Server Client Setup
     description: Capture the environment variables and the Azure OpenAI client shared by the server agents.
     moves:
       - action: highlight
         path: src/06-agent-as-mcp.cs
         position: '18:21'
-        zoom: 2
+        zoom: 1
   - title: Server Agents
     description: Show the two agents that will be exposed as MCP tools.
     moves:
       - action: highlight
         path: src/06-agent-as-mcp.cs
         position: '23:38'
-        zoom: 2
+        zoom: 1
   - title: Tool Wrapping
     description: Focus on the conversion from AIAgent to McpServerTool.
     moves:
       - action: highlight
         path: src/06-agent-as-mcp.cs
         position: '40:41'
-        zoom: 2
+        zoom: 1
   - title: MCP Host Setup
     description: Show the stdio transport and tool registration that make the server discoverable.
     moves:
       - action: highlight
         path: src/06-agent-as-mcp.cs
         position: '43:46'
-        zoom: 2
+        zoom: 1
   - title: Client Packages
     description: Switch to the MCP client sample and show the packages and logging setup.
     moves:
@@ -52,35 +52,35 @@ scenes:
       - action: highlight
         path: src/06b-agent-as-mcp-client.cs
         position: '1:15'
-        zoom: 2
+        zoom: 1
   - title: Remote MCP Connection
     description: Connect to the remote MCP server over streamable HTTP.
     moves:
       - action: highlight
         path: src/06b-agent-as-mcp-client.cs
         position: '17:33'
-        zoom: 2
+        zoom: 1
   - title: Tool Discovery
     description: List the remote MCP tools before wiring them into the agent.
     moves:
       - action: highlight
         path: src/06b-agent-as-mcp-client.cs
         position: '35:39'
-        zoom: 2
+        zoom: 1
   - title: Agent With MCP Tools
     description: Build a DocsAgent that can call any tool discovered from the MCP server.
     moves:
       - action: highlight
         path: src/06b-agent-as-mcp-client.cs
         position: '41:52'
-        zoom: 2
+        zoom: 1
   - title: Client Run
     description: End on the RunAsync call that uses the MCP-backed tools to answer a docs question.
     moves:
       - action: highlight
         path: src/06b-agent-as-mcp-client.cs
         position: '54:55'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close on MCP before moving into agent-to-agent communication.
     moves:

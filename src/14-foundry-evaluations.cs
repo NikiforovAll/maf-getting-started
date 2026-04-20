@@ -11,6 +11,7 @@
 
 using Azure.AI.OpenAI;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -58,11 +59,17 @@ const string Context = """
     support for RAG patterns with vector search, and enterprise compliance features.
     """;
 
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: AgentName,
-    model: deploymentName,
-    instructions: "You are a helpful assistant. Answer questions accurately based on the provided context."
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a helpful assistant. Answer questions accurately based on the provided context.",
+        }
+    )
 );
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 try
 {

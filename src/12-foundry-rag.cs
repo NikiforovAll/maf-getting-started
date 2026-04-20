@@ -8,11 +8,14 @@
 #:property NoWarn=OPENAI001
 
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI.Assistants;
 using OpenAI.Files;
+using OpenAI.Responses;
+using OpenAI.VectorStores;
 using Spectre.Console;
 
 var endpoint =
@@ -68,30 +71,46 @@ OpenAIFile uploaded = await AnsiConsole
         }
     );
 
-// 2. Create vector store
+// 2. Create vector store and wait for file ingestion to complete
 var vectorStore = await AnsiConsole
     .Status()
     .Spinner(Spinner.Known.Dots)
     .StartAsync(
         "Creating vector store...",
-        async _ =>
+        async ctx =>
         {
             var vs = await vectorStoresClient.CreateVectorStoreAsync(
                 options: new() { FileIds = { uploaded.Id }, Name = "contoso-products" }
             );
-            AnsiConsole.MarkupLine($"[dim]Vector store created:[/] {vs.Value.Id}");
+            ctx.Status("Waiting for file ingestion...");
+            while (true)
+            {
+                var current = await vectorStoresClient.GetVectorStoreAsync(vs.Value.Id);
+                if (current.Value.Status == VectorStoreStatus.Completed)
+                {
+                    break;
+                }
+                await Task.Delay(500);
+            }
+            AnsiConsole.MarkupLine($"[dim]Vector store ready:[/] {vs.Value.Id}");
             return vs;
         }
     );
 string vectorStoreId = vectorStore.Value.Id;
 
 // 3. Create agent with HostedFileSearchTool
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    model: deploymentName,
-    name: AgentName,
-    instructions: "You are a Contoso sales assistant. Answer questions using the product catalog. Always cite the source.",
-    tools: [new HostedFileSearchTool() { Inputs = [new HostedVectorStoreContent(vectorStoreId)] }]
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions =
+                "You are a Contoso sales assistant. Answer questions using the product catalog. Always cite the source.",
+            Tools = { ResponseTool.CreateFileSearchTool(vectorStoreIds: [vectorStoreId]) },
+        }
+    )
 );
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion);
 
 // 4. Multi-turn Q&A
 AnsiConsole.Write(new Rule("[bold blue]Multi-turn Q&A[/]").LeftJustified());

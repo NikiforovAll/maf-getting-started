@@ -15,49 +15,49 @@ demos:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '1:3'
-        zoom: 2
+        zoom: 1
   - title: Using Directives
     description: Show the namespaces needed for Azure OpenAI and the agent runtime.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '5:8'
-        zoom: 2
+        zoom: 1
   - title: Agent Setup
     description: Create the agent with instructions that emphasize remembering user-provided context.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '10:18'
-        zoom: 2
+        zoom: 1
   - title: Session Creation
     description: Create the AgentSession that will carry the conversation state across calls.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '20:20'
-        zoom: 2
+        zoom: 1
   - title: Turn 1
     description: Establish the initial user context that the agent should remember.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '22:24'
-        zoom: 2
+        zoom: 1
   - title: Turn 2
     description: Ask the agent to recall information from the earlier turn.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '26:28'
-        zoom: 2
+        zoom: 1
   - title: Turn 3
     description: Reuse the accumulated context to generate a context-aware recommendation.
     steps:
       - action: highlight
         path: src/03-multi-turn.cs
         position: '30:34'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close on the role of AgentSession before moving into persistence.
     steps:

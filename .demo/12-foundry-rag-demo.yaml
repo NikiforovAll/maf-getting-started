@@ -14,43 +14,43 @@ demos:
         path: src/12-foundry-rag.cs
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '28:30'
-        zoom: 2
+        position: '30:32'
+        zoom: 1
   - title: Knowledge Base
     description: Create a temporary file with the Contoso product catalog.
     steps:
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '33:55'
-        zoom: 2
+        position: '35:57'
+        zoom: 1
   - title: Upload File
     description: Upload the knowledge base to Foundry for processing.
     steps:
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '59:70'
-        zoom: 2
+        position: '61:72'
+        zoom: 1
   - title: Create Vector Store
-    description: Auto-chunks and embeds the uploaded file.
+    description: Auto-chunks and embeds the uploaded file; poll until ingestion completes.
     steps:
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '73:87'
-        zoom: 2
+        position: '75:99'
+        zoom: 1
   - title: Create Agent With File Search
-    description: HostedFileSearchTool with HostedVectorStoreContent grounds the agent on your data.
+    description: ResponseTool.CreateFileSearchTool in PromptAgentDefinition grounds the agent on your data.
     steps:
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '90:95'
-        zoom: 2
+        position: '102:113'
+        zoom: 1
   - title: Multi-Turn Q&A
     description: Session-based questions with grounded answers and citations.
     steps:
       - action: highlight
         path: src/12-foundry-rag.cs
-        position: '98:106'
-        zoom: 2
+        position: '116:124'
+        zoom: 1
   - title: Wrap Up
     description: Recap RAG before moving to workflows.
     steps:

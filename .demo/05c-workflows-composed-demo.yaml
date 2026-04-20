@@ -15,70 +15,70 @@ demos:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '1:11'
-        zoom: 2
+        zoom: 1
   - title: Inputs And Client
     description: Capture the environment variables and the shared Azure OpenAI client.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '13:16'
-        zoom: 2
+        zoom: 1
   - title: Mask Executor
     description: Show the pure function that redacts emails before any LLM call happens.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '18:21'
-        zoom: 2
+        zoom: 1
   - title: ToAgent Adapter
     description: Bridge from function output (string) to agent input (ChatMessage + TurnToken). Note sentMessageTypes declaration.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '23:32'
-        zoom: 2
+        zoom: 1
   - title: Rewriter Agent Executor
     description: Walk through the agent definition and BindAsExecutor with ForwardIncomingMessages disabled.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '34:47'
-        zoom: 2
+        zoom: 1
   - title: FromAgent Adapter
     description: Extract plain string from agent ChatMessage output for downstream function executors.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '49:52'
-        zoom: 2
+        zoom: 1
   - title: Validation Executor
     description: Validate that the rewrite did not leak any email addresses.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '54:62'
-        zoom: 2
+        zoom: 1
   - title: Workflow Graph
     description: Build the five-node graph with adapter executors bridging functions and agents.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '64:71'
-        zoom: 2
+        zoom: 1
   - title: Sample Input
     description: Show the PII-laden input that the pipeline will sanitize and rewrite.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '73:80'
-        zoom: 2
+        zoom: 1
   - title: Streaming Execution
     description: Run the composed workflow with streaming to see agent tokens in real time.
     steps:
       - action: highlight
         path: src/05c-workflows-composed.cs
         position: '82:110'
-        zoom: 2
+        zoom: 1
   - title: Wrap Up
     description: Close on mixed deterministic and intelligent steps before moving into MCP.
     steps:

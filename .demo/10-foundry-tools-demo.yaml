@@ -14,43 +14,43 @@ demos:
         path: src/10-foundry-tools.cs
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '21:27'
-        zoom: 2
+        position: '24:30'
+        zoom: 1
   - title: Tool Registration
-    description: AIFunctionFactory.Create wraps methods into AITool instances.
+    description: AIFunctionFactory.Create wraps methods into AIFunction instances.
     steps:
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '33:33'
-        zoom: 2
+        position: '36:38'
+        zoom: 1
   - title: Create Agent With Tools
-    description: CreateAIAgentAsync stores tool schemas server-side.
+    description: Declare tool schemas in PromptAgentDefinition.Tools via AsOpenAIResponseTool; AsAIAgent wires invocable impls.
     steps:
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '36:41'
-        zoom: 2
+        position: '41:51'
+        zoom: 1
   - title: Non-Streaming Run
     description: Agent calls tools automatically and returns the combined answer.
     steps:
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '44:48'
-        zoom: 2
+        position: '53:58'
+        zoom: 1
   - title: Streaming Run
     description: Same tool invocation with streaming output.
     steps:
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '51:57'
-        zoom: 2
+        position: '60:67'
+        zoom: 1
   - title: Retrieve With Tools
-    description: GetAIAgentAsync requires tools parameter for automatic invocation.
+    description: Agents.GetAgentAsync + AsAIAgent retrieves an existing agent with invocable tools.
     steps:
       - action: highlight
         path: src/10-foundry-tools.cs
-        position: '60:62'
-        zoom: 2
+        position: '69:73'
+        zoom: 1
   - title: Wrap Up
     description: Recap function tools before moving to hosted tools.
     steps:

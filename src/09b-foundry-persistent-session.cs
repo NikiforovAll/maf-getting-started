@@ -5,10 +5,11 @@
 #:property EnablePreviewFeatures=true
 #:property NoWarn=OPENAI001
 
+using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.AzureAI;
 using Spectre.Console;
 
 const string AgentName = "FoundryPersistentSessionAgent";
@@ -22,44 +23,60 @@ var deploymentName =
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
 Console.WriteLine("--- Creating Foundry Agent ---");
-FoundryAgent agent = (FoundryAgent)
-    await aiProjectClient.CreateAIAgentAsync(
-        name: AgentName,
-        model: deploymentName,
-        instructions: "You are a friendly assistant. Keep your answers brief."
-    );
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a friendly assistant. Keep your answers brief.",
+        }
+    )
+);
+AIAgent foundryAgent = aiProjectClient.AsAIAgent(agentVersion);
 
+// FoundryAgent wraps a ChatClientAgent; unwrap it to access the CreateSessionAsync(conversationId) overload.
+ChatClientAgent agent = foundryAgent.GetService<ChatClientAgent>()!;
 Console.WriteLine($"Agent created: {agent.Name}");
 
-// Create a server-side conversation session — persisted in Foundry, visible in Portal
-AgentSession session1 = await agent.CreateConversationSessionAsync();
+// Create a server-side conversation — Foundry stores the full history, visible in the Portal.
+// The conversation ID is the only thing we need to persist on our side to resume later.
+ProjectConversationsClient conversationsClient = aiProjectClient
+    .GetProjectOpenAIClient()
+    .GetProjectConversationsClient();
+ProjectConversation conversation = await conversationsClient.CreateProjectConversationAsync();
+AnsiConsole.MarkupLine($"[dim]Conversation created:[/] {conversation.Id}");
 
-// Session 1: establish context
-AnsiConsole.Write(new Rule("[bold yellow]Session 1[/]").LeftJustified());
+// Session 1: establish context — history lives server-side in the conversation
+AgentSession session = await agent.CreateSessionAsync(conversation.Id);
+AnsiConsole.Write(new Rule("[bold yellow]Session 1 — establish context[/]").LeftJustified());
 
 string prompt1 = "My name is Alex and I'm building a .NET app that uses Azure AI Foundry.";
 AnsiConsole.MarkupLine($"[bold blue]User:[/] {prompt1}");
-AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt1, session1)}");
+AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt1, session)}");
 
 string prompt2 = "I prefer concise answers with code examples when possible.";
 AnsiConsole.MarkupLine($"\n[bold blue]User:[/] {prompt2}");
-AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt2, session1)}");
+AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt2, session)}");
 
-// Session 2: new conversation session — agent remembers within the same session
-AnsiConsole.Write(new Rule("[bold yellow]Session 2 (new conversation)[/]").LeftJustified());
-AgentSession session2 = await agent.CreateConversationSessionAsync();
+// Simulate process restart: all we kept is conversation.Id.
+// New session, same conversation ID → Foundry replays the history server-side.
+AgentSession resumed = await agent.CreateSessionAsync(conversation.Id);
+AnsiConsole.Write(
+    new Rule("[bold yellow]Session 2 — resumed from conversation ID[/]").LeftJustified()
+);
 
-string prompt3 = "Tell me a fun fact about .NET.";
+string prompt3 = "What's my name and how do I prefer my answers?";
 AnsiConsole.MarkupLine($"[bold blue]User:[/] {prompt3}");
-AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt3, session2)}");
+AnsiConsole.MarkupLine($"[bold green]Agent:[/] {await agent.RunAsync(prompt3, resumed)}");
 
 // Cleanup
-if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/]?"))
+if (AnsiConsole.Confirm($"Delete agent [bold]{agent.Name}[/] and conversation?"))
 {
     await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
-    AnsiConsole.MarkupLine("[green]Agent deleted.[/]");
+    await conversationsClient.DeleteConversationAsync(conversation.Id);
+    AnsiConsole.MarkupLine("[green]Agent and conversation deleted.[/]");
 }
 else
 {
-    AnsiConsole.MarkupLine("[yellow]Agent kept. Remember to clean up manually.[/]");
+    AnsiConsole.MarkupLine("[yellow]Resources kept. Remember to clean up manually.[/]");
 }

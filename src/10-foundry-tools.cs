@@ -2,14 +2,17 @@
 #:package Azure.AI.Projects@2.0.0-beta.2
 #:package Azure.Identity@1.20.0
 #:package Microsoft.Extensions.AI@10.4.0
+#:package Microsoft.Extensions.AI.OpenAI@10.4.0
 #:package Spectre.Console@0.50.0
 #:property EnablePreviewFeatures=true
 
 using System.ComponentModel;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using OpenAI.Responses;
 using Spectre.Console;
 
 var endpoint =
@@ -30,15 +33,22 @@ const string AgentName = "FoundryToolsAgent";
 
 AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());
 
-AITool[] tools = [AIFunctionFactory.Create(GetWeather), AIFunctionFactory.Create(GetTime)];
+AIFunction getWeather = AIFunctionFactory.Create(GetWeather);
+AIFunction getTime = AIFunctionFactory.Create(GetTime);
+AITool[] tools = [getWeather, getTime];
 
 // Create agent with tools — server stores tool schemas, client provides invocable implementations
-AIAgent agent = await aiProjectClient.CreateAIAgentAsync(
-    name: AgentName,
-    model: deploymentName,
-    instructions: "You are a helpful assistant with access to weather and time tools.",
-    tools: tools
+AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
+    agentName: AgentName,
+    options: new AgentVersionCreationOptions(
+        new PromptAgentDefinition(deploymentName)
+        {
+            Instructions = "You are a helpful assistant with access to weather and time tools.",
+            Tools = { getWeather.AsOpenAIResponseTool(), getTime.AsOpenAIResponseTool() },
+        }
+    )
 );
+AIAgent agent = aiProjectClient.AsAIAgent(agentVersion, tools: tools);
 
 // Non-streaming
 Console.WriteLine("--- Non-streaming ---");
@@ -57,7 +67,8 @@ await foreach (var update in agent.RunStreamingAsync("What's the weather in Kyiv
 Console.WriteLine();
 
 // Retrieve existing agent by name — must pass tools for invocation
-AIAgent existing = await aiProjectClient.GetAIAgentAsync(name: AgentName, tools: tools);
+AgentRecord existingRecord = await aiProjectClient.Agents.GetAgentAsync(AgentName);
+AIAgent existing = aiProjectClient.AsAIAgent(existingRecord, tools: tools);
 Console.WriteLine("\n--- Retrieved agent ---");
 Console.WriteLine(await existing.RunAsync("What time is it in UTC?"));
 
