@@ -65,7 +65,7 @@ footer: ""
 
 # **Why Foundry?**
 
-## From Azure OpenAI to managed agents
+### Managed platform for building, deploying, and monitoring AI agents at scale
 
 ---
 
@@ -181,7 +181,7 @@ await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
 
 ---
 
-![bg fit](./img/bg-alt1.png)
+![bg fit](./img/bg-alt3.png)
 
 # Agent Versioning
 
@@ -189,20 +189,20 @@ await aiProjectClient.Agents.DeleteAgentAsync(agent.Name);
 // Each CreateAgentVersionAsync call creates a new version
 AgentVersion v1 = await aiProjectClient.Agents.CreateAgentVersionAsync(
     agentName: "MyAgent",
-    options: new AgentVersionCreationOptions(
-        new PromptAgentDefinition("gpt-4o-mini") { Instructions = "You are helpful." }));
+    options: new (new PromptAgentDefinition("gpt-4o-mini") {
+        Instructions = "You are helpful."
+    }));
 
 AgentVersion v2 = await aiProjectClient.Agents.CreateAgentVersionAsync(
     agentName: "MyAgent",
-    options: new AgentVersionCreationOptions(
-        new PromptAgentDefinition("gpt-4o-mini") { Instructions = "You are extremely helpful and concise." }));
+    options: new (new PromptAgentDefinition("gpt-4o-mini") {
+        Instructions = "You are extremely helpful and concise."
+    }));
 
 // GetAgentAsync returns the latest version as an AgentRecord
 AgentRecord latestRecord = await aiProjectClient.Agents.GetAgentAsync("MyAgent");
 AIAgent latest = aiProjectClient.AsAIAgent(latestRecord);
 ```
-
-<br/>
 
 <div class="tip">
 
@@ -211,9 +211,9 @@ Agent definitions are **immutable** after creation — create a new version to c
 </div>
 
 
-![bg fit](./img/bg-section.png)
-
 ---
+
+![bg fit](./img/bg-section.png)
 
 # **Observability**
 
@@ -257,8 +257,7 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
 // 2. Wrap agent with telemetry
 AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
     agentName: "FoundryBasicsAgent",
-    options: new AgentVersionCreationOptions(
-        new PromptAgentDefinition(deploymentName) { Instructions = "You are a friendly assistant." }));
+    options: new (new PromptAgentDefinition(deploymentName) { Instructions = "You are a friendly assistant." }));
 AIAgent agent = aiProjectClient
     .AsAIAgent(agentVersion)
     .AsBuilder()
@@ -316,12 +315,11 @@ Print the **Trace ID** → find the same trace in Foundry Portal with token coun
 # Creating a Foundry Conversation
 
 ```ts
-// AsAIAgent returns FoundryAgent; unwrap to the inner ChatClientAgent
-// to access the CreateSessionAsync(conversationId) overload.
+// Get agent client
 AIAgent foundryAgent = aiProjectClient.AsAIAgent(agentVersion);
 ChatClientAgent agent = foundryAgent.GetService<ChatClientAgent>()!;
 
-// Create a server-side conversation — persisted in Foundry, visible in Portal
+// Create a server-side conversation
 ProjectConversationsClient conversationsClient = aiProjectClient
     .GetProjectOpenAIClient()
     .GetProjectConversationsClient();
@@ -330,6 +328,8 @@ ProjectConversation conversation = await conversationsClient.CreateProjectConver
 
 // Link session to the conversation — history stored server-side
 AgentSession session = await agent.CreateSessionAsync(conversation.Id);
+
+// Run
 Console.WriteLine(await agent.RunAsync("My name is Oleksii.", session));
 ```
 
@@ -349,9 +349,11 @@ Console.WriteLine(await agent.RunAsync("My name is Oleksii.", session));
 
 ```ts
 // New session, same conversation ID — agent remembers everything
+
 AgentSession resumed = await agent.CreateSessionAsync(conversation.Id);
 Console.WriteLine(await agent.RunAsync("What's my name?", resumed));
-// → "Your name is Alex."
+
+// → "Your name is Oleksii."
 ```
 
 <br/>
@@ -389,11 +391,21 @@ Conversations **persist beyond sessions** — store the ID in your DB, resume fr
 ```ts
 [Description("Get the weather for a given location.")]
 static string GetWeather([Description("The location")] string location)
-    => $"The weather in {location} is sunny with a high of 22°C.";
+{
+    return $"The weather in {location} is sunny with a high of 22°C.";
+}
 
 AIFunction getWeather = AIFunctionFactory.Create(GetWeather);
 AITool[] tools = [getWeather];
+```
 
+---
+
+![bg fit](./img/bg-alt2.png)
+
+# Creating Agent with Tools
+
+```ts
 // Register schema server-side (declarative) + provide invocable impl client-side
 AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync(
     agentName: "WeatherAgent",
@@ -402,7 +414,10 @@ AgentVersion agentVersion = await aiProjectClient.Agents.CreateAgentVersionAsync
         {
             Instructions = "You are a helpful assistant with weather tools.",
             Tools = { getWeather.AsOpenAIResponseTool() },
-        }));
+        }
+    )
+);
+
 AIAgent agent = aiProjectClient.AsAIAgent(agentVersion, tools: tools);
 ```
 
@@ -418,10 +433,13 @@ AIAgent agent = aiProjectClient.AsAIAgent(agentVersion, tools: tools);
 AgentRecord record = await aiProjectClient.Agents.GetAgentAsync("WeatherAgent");
 AIAgent existing = aiProjectClient.AsAIAgent(
     record,
-    tools: [AIFunctionFactory.Create(GetWeather)]);
+    tools: [AIFunctionFactory.Create(GetWeather)]
+);
 
 Console.WriteLine(await existing.RunAsync("What's the weather in Kyiv?"));
 ```
+
+<br/>
 
 <div class="key">
 
@@ -841,5 +859,4 @@ EvaluationResult result = await evaluator.EvaluateAsync(
 - [Azure AI Foundry](https://ai.azure.com)
 - [Azure.AI.Projects SDK](https://learn.microsoft.com/en-us/dotnet/api/overview/azure/ai.projects-readme)
 - [Microsoft.Extensions.AI.Evaluation](https://learn.microsoft.com/dotnet/ai/evaluation/libraries)
-- [Reflexion Paper (NeurIPS 2023)](https://arxiv.org/abs/2303.11366)
 - [This repo](https://github.com/NikiforovAll/maf-getting-started)
